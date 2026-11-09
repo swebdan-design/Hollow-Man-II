@@ -302,8 +302,8 @@ void pause_menu(void) BANKED {
     render_sprites();
     if (use_request) {
         /* use key item on what is in front: identical to pressing A there */
-        int16_t fx = (pl_x >> 4) + 8 + (pl_dir == DIR_LEFT ? -14 : (pl_dir == DIR_RIGHT ? 14 : 0));
-        int16_t fy = (pl_y >> 4) + 11 + (pl_dir == DIR_UP ? -14 : (pl_dir == DIR_DOWN ? 14 : 0));
+        int16_t fx = (pl_x >> 4) + 8 + (pl_dir == DIR_LEFT ? -16 : (pl_dir == DIR_RIGHT ? 16 : 0));
+        int16_t fy = (pl_y >> 4) + 12 + (pl_dir == DIR_UP ? -16 : (pl_dir == DIR_DOWN ? 16 : 0));
         uint8_t found = 0;
         if (fx >= 0 && fy >= 0) {
             for (i = 0; i < mh.nobjs; i++) {

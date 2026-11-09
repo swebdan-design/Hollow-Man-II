@@ -77,7 +77,7 @@ static void do_attack_hit(void) {
 
 /* A button: interact with what's in front; otherwise use the equipped tool */
 static uint8_t try_interact(void) {
-    int16_t fx = (pl_x >> 4) + 8 + dxs[pl_dir] * 14, fy = (pl_y >> 4) + 11 + dys[pl_dir] * 14;
+    int16_t fx = (pl_x >> 4) + 8 + dxs[pl_dir] * 16, fy = (pl_y >> 4) + 12 + dys[pl_dir] * 16;
     uint8_t tx, ty, i;
     if (fx < 0 || fy < 0) return 0;
     tx = fx >> 4; ty = fy >> 4;
@@ -97,12 +97,22 @@ static uint8_t try_interact(void) {
             }
         }
     }
-    /* signs / searchable objects */
-    for (i = 0; i < mh.nobjs; i++) {
-        obj_t *o = &objs[i];
-        if (o->type == OBJ_SIGN && o->x == tx && o->y == ty && cond_ok(o->cond)) {
-            script_queue(o->script);
-            return 1;
+    /* signs / searchable objects: probe the facing tile, then the tiles under the
+     * feet box edges, so a slightly off-centre player still reaches the object */
+    {
+        uint8_t p;
+        for (p = 0; p < 3; p++) {
+            int16_t px2 = fx, py2 = fy;
+            if (p == 1) { if (pl_dir >= 2) py2 = (pl_y >> 4) + 9; else px2 = (pl_x >> 4) + 3; }
+            if (p == 2) { if (pl_dir >= 2) py2 = (pl_y >> 4) + 15; else px2 = (pl_x >> 4) + 12; }
+            if (px2 < 0 || py2 < 0) continue;
+            for (i = 0; i < mh.nobjs; i++) {
+                obj_t *o = &objs[i];
+                if (o->type == OBJ_SIGN && o->x == (px2 >> 4) && o->y == (py2 >> 4) && cond_ok(o->cond)) {
+                    script_queue(o->script);
+                    return 1;
+                }
+            }
         }
     }
     if (mflags_at(tx, ty) & MF_SHADOW) {
@@ -150,7 +160,7 @@ static void use_tool(void) {
         hud_dirty = 1;
         break;
     case TOOL_SHADOW: {
-        int16_t fx = px + 8 + dxs[pl_dir] * 14, fy = py + 11 + dys[pl_dir] * 14;
+        int16_t fx = px + 8 + dxs[pl_dir] * 16, fy = py + 12 + dys[pl_dir] * 16;
         uint8_t i;
         flash_red(4);
         sfx_play(10);

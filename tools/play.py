@@ -133,7 +133,24 @@ class Bot(Play):
                 return True
             d = (n[0] - c[0], n[1] - c[1])
             if d not in DIRS:
-                return False
+                if abs(d[0]) + abs(d[1]) > 2:
+                    return False
+                d = (d[0], 0) if d[0] else (0, d[1])
+            # keep the feet centred on the tile row/column while walking
+            if d[1] == 0:
+                y = self.r8('pl_y') | (self.r8('pl_y', 1) << 8)
+                fy = ((y >> 4) + 12) & 15
+                if fy < 5:
+                    self.hold('down', 2)
+                elif fy > 12:
+                    self.hold('up', 2)
+            else:
+                x = self.r8('pl_x') | (self.r8('pl_x', 1) << 8)
+                fx = ((x >> 4) + 8) & 15
+                if fx < 5:
+                    self.hold('right', 2)
+                elif fx > 11:
+                    self.hold('left', 2)
             self.hold(DIRS[d], 3)
             if self.dlg_open():
                 self.skip_text()
@@ -169,6 +186,9 @@ class Bot(Play):
 
     def interact(self, target):
         if not self.goto(target, adjacent_ok=True):
+            return False
+        c = self.pos()
+        if abs(c[0] - target[0]) + abs(c[1] - target[1]) != 1:
             return False
         self.face(target)
         self.press('a', 3, 6)

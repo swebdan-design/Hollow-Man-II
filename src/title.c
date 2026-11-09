@@ -175,6 +175,8 @@ void options_menu(uint8_t ingame) BANKED {
 /* ------------------------------------------------------------------ music player */
 void music_player(void) BANKED {
     uint8_t sel = 0, top = 0, i, playing = 0xFF;
+    /* unlocked tracks come from the save file (or the defaults) */
+    if (!save_load()) gs.music_unlock[0] |= 0x03;
     bg_text_screen();
     print_at(1, 0, "MUSIC PLAYER");
     print_at(1, 1, "by Synth Centric");

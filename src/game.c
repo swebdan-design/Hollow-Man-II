@@ -151,7 +151,7 @@ static void check_player_tile(void) {
                     sfx_play(7);
                     warp_to(w->dmap, w->dx, w->dy, w->ddir);
                     return;
-                } else {
+                } else if (w->lockscript != 0xFFFF) {
                     /* locked: step back and explain */
                     static const int8_t bx[4] = {0, 0, 1, -1};
                     static const int8_t by[4] = {-1, 1, 0, 0};

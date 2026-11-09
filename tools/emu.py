@@ -53,7 +53,7 @@ class Emu:
         return self.pb.symbol_lookup(name)
 
     def sram(self):
-        return bytes(self.pb.memory[0, 0xA000:0xC000])
+        return bytes(self.pb.memory[0, 0xA000:0xBFFF]) + bytes([self.pb.memory[0, 0xBFFF]])
 
     def stop(self):
         self.pb.stop(save=False)
