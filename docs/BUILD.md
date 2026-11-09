@@ -74,7 +74,7 @@ GBA graphics are pre-rendered at build time with numpy:
   illustration figures and finishing.
 - `tools/render_env.py` lights and quantises each map.
 
-A clean build takes about 10 minutes, almost all of it rendering. Renders are cached in
+A clean GBA build takes about 5 minutes, almost all of it rendering. Renders are cached in
 `build/gba/cache3d/`, keyed on a hash of the sources, so rebuilds take about a minute. The
 UI and title type use the DejaVu fonts in `assets/fonts/` (free licence, `LICENSE-DejaVu.txt`).
 Requires numpy (tested with 2.x).
