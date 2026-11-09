@@ -76,9 +76,11 @@ class GBA:
         return v - 0x10000 if v >= 0x8000 else v
 
     def sram(self):
-        path = os.path.join(self.tmp, 'out.sav')
-        self.cmd('save ' + path)
-        return open(path, 'rb').read() if os.path.exists(path) else b''
+        """read the 32 KB battery SRAM through the bus (byte-wide, like the cartridge)"""
+        out = b''
+        for off in range(0, 32768, 4096):
+            out += self.peek(0x0E000000 + off, 4096)
+        return out
 
     def stop(self):
         try:

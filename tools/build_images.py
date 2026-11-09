@@ -200,6 +200,13 @@ def img_title():
     dr.rectangle([15, 75, 22, 77], fill=C['yellow'])
     for i in range(6):
         dr.line([16 - i, 78 + i * 6, 21 + i, 78 + i * 6], fill=C['amber'])
+    # warm fog halo behind him (colours from his own palette) so the black balaclava reads
+    px = im.load()
+    for y in range(70, 136):
+        for x in range(40, 120):
+            d = ((x - 80) / 40.0) ** 2 + ((y - 102) / 34.0) ** 2
+            if d < 1 and BAYER[y & 3][x & 3] < (1 - d) * 22:
+                px[x, y] = C['dbrown'] if d > .35 or BAYER[y & 3][x & 3] > 9 else C['brown']
     # Hollow Man x3 (48x48), standing centre
     rows = doll_rows('hollow', 'down', 0)
     draw_grid(im, rows, 56, 82, {'1': 'cream', '2': 'brown', '3': 'black'}, 3)

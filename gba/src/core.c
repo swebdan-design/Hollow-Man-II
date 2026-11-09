@@ -150,6 +150,7 @@ void screen_init(void) {
 }
 
 void clear_bg(void) {
+    dma3_fill32(CHARBLOCK(0), 0, 8);          /* tile 0 must be empty (an illustration may have used it) */
     dma3_fill32(SCREENBLOCK(28), 0, 512);
     scroll_x = 0; scroll_y = 0;
 }

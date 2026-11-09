@@ -133,9 +133,9 @@ class Bot(Play):
                 return True
             d = (n[0] - c[0], n[1] - c[1])
             if d not in DIRS:
-                if abs(d[0]) + abs(d[1]) > 2:
+                if abs(d[0]) + abs(d[1]) > 2 and d[0] and d[1]:
                     return False
-                d = (d[0], 0) if d[0] else (0, d[1])
+                d = ((d[0] > 0) - (d[0] < 0), 0) if d[0] else (0, (d[1] > 0) - (d[1] < 0))
             # keep the feet centred on the tile row/column while walking
             if d[1] == 0:
                 y = self.r8('pl_y') | (self.r8('pl_y', 1) << 8)

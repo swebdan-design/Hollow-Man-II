@@ -618,10 +618,10 @@ def build(pk, hdr, dirs_c, legends, palsets, music_ids, sheets, images, tileset_
     offs = []
     for it in ITEMS:
         offs.append(len(txt))
-        txt += it[1].encode() + b'\0' + _text(it[2])
+        txt += it[1].encode() + b'\0' + _text(it[2], width=18)
     for e in EVIDENCE:
         offs.append(len(txt))
-        txt += e[1].encode() + b'\0' + _text(e[2])
+        txt += e[1].encode() + b'\0' + _text(e[2], width=18)
     pk.blob('menu_text', txt, group='menutext')
     ob = b''.join(bytes([o & 0xFF, o >> 8]) for o in offs)
     pk.blob('menu_text_offs', ob, group='menutext')
