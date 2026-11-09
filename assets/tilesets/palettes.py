@@ -82,7 +82,7 @@ SETS = {
     'int_dark': ('interior', S(mood(BASE['interior'], '201820', 0.35, 0.8))),
     'und_sewer': ('under', S(BASE['under'])),
     'und_cold': ('under', S(mood(BASE['under'], '8098b0', 0.35, 1.05))),
-    'und_crypt': ('under', S(mood(BASE['under'], '504860', 0.30, 0.85))),
+    'und_crypt': ('under', S(mood(BASE['under'], '504860', 0.25, 1.1))),
     'und_basement': ('under', S(mood(BASE['under'], '705038', 0.30, 0.85))),
     'und_ward': ('under', S(mood(BASE['under'], '506850', 0.30, 0.85))),
 }

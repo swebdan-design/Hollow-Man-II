@@ -62,7 +62,7 @@ static void smoke_tick(void) {
         }
         if (smoke_y[i] < 70) { smoke_y[i] = 140; smoke_x[i] = 20 + (rand8() & 127); }
         set_sprite_tile(i, SPR_SMOKE);
-        set_sprite_prop(i, 1);
+        set_sprite_prop(i, 3);
         move_sprite(i, smoke_x[i], smoke_y[i]);
     }
     /* flickering streetlight: palette 3 colour 3 */
@@ -186,17 +186,17 @@ void music_player(void) BANKED {
     for (;;) {
         for (i = 0; i < 8; i++) {
             uint8_t s = top + i;
-            fill_area(1, 3 + i, 19, 1, 0);
+            fill_area(0, 3 + i, 20, 1, 0);
             if (s >= NUM_SONGS) continue;
-            print_num(2, 3 + i, s + 1, 2);
-            if (gs.music_unlock[s >> 3] & (1 << (s & 7))) print_at(5, 3 + i, song_title[s]);
-            else { print_at(5, 3 + i, "- - - - -"); put_tile(18, 3 + i, UI_LOCK); }
-            if (s == playing) put_tile(4, 3 + i, UI_NOTE);
+            print_num(1, 3 + i, s + 1, 2);
+            if (gs.music_unlock[s >> 3] & (1 << (s & 7))) print_at(4, 3 + i, song_title[s]);
+            else { print_at(4, 3 + i, "- - - - -"); put_tile(18, 3 + i, UI_LOCK); }
+            if (s == playing) put_tile(3, 3 + i, UI_NOTE);
         }
         print_at(1, 16, "A:PLAY B:STOP/BACK");
         for (;;) {
             uint8_t c, r;
-            for (i = 0; i < 8; i++) put_tile(1, 3 + i, (top + i) == sel ? UI_CURSOR : 0);
+            for (i = 0; i < 8; i++) put_tile(0, 3 + i, (top + i) == sel ? UI_CURSOR : 0);
             /* visualiser: four channel bars */
             for (c = 0; c < 4; c++) {
                 uint8_t lv = vis_level[c] >> 1;
@@ -314,11 +314,14 @@ void credits_run(uint8_t ending) BANKED {
 }
 
 /* ------------------------------------------------------------------ endings */
+uint8_t ending_id = 0xFF;   /* last ending shown (0 A, 1 B, 2 secret) */
+
 void ending_run(void) BANKED {
     uint8_t e;
     if (flag_get(F_MERCY_DONE) && mercy_count() >= 7 && gs.influence < 50) e = 2;
     else if (gs.influence >= 75) e = 1;
     else e = 0;
+    ending_id = e;
     flag_set(F_GAME_CLEAR);
     if (e == 0) script_run(SCR_END_A);
     else if (e == 1) script_run(SCR_END_B);

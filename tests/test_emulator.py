@@ -204,3 +204,123 @@ def test_music_player_plays():
     e.press('b'); e.tick(10)
     assert e.r8('music_cur') == 0xFF
     e.stop()
+
+
+def test_chapter1_full_playthrough():
+    """Real inputs from NEW GAME: stealth/combat tutorial, crate puzzle, office key, Eddie Voss."""
+    e = Bot()
+    e.new_game()
+    e.goto((2, 4)); e.walk('up', 1); e.tick(60); e.skip_text()
+    assert e.r8('cur_map') == M['pawn_front']
+    e.fight()
+    e.goto((5, 1)); e.walk('up', 1); e.tick(60); e.skip_text()
+    assert e.r8('cur_map') == M['pawn_store']
+    e.fight(kinds=(2,))
+    e.goto((7, 6)); e.hold('right', 90); e.tick(10)       # push the divider crate
+    e.goto((10, 3)); e.hold('right', 40); e.tick(10)      # push the corridor crate
+    e.interact((11, 4))
+    assert (e.r8('gs', savefmt.OFF['items']) >> IT['office_key']) & 1
+    e.goto((7, 10)); e.walk('down', 1); e.tick(60); e.skip_text()
+    e.interact((9, 0))
+    e.goto((9, 1)); e.walk('up', 1); e.tick(60); e.skip_text()
+    assert e.r8('cur_map') == M['pawn_office']
+    for _ in range(30):
+        e.fight(max_steps=40)
+        if not [a for a in e.actors() if a['type'] == 3] or e.gs('hp') == 0:
+            break
+    assert e.gs('hp') > 0, 'bot died to Eddie'
+    e.skip_text(200)
+    assert e.flag(F['ch1_done'])
+    assert (e.r8('gs', savefmt.OFF['evidence']) >> EV['photo']) & 1
+    e.stop()
+
+
+def _final_battle(infl, secret=False, refuse=False):
+    flags = ['ch%d_done' % i for i in range(1, 7)] + ['theatre_done', 'shadow_power', 'chapel_open']
+    evs = []
+    if secret:
+        flags.append('mercy_done')
+        evs = [EV['mercy%d' % i] for i in range(1, 8)]
+    st = savefmt.make_state(M['ward_chapel'], 5, 10, flags=[F[f] for f in flags], evidence=evs,
+                            items=[IT['pipe'], IT['axe'], IT['pistol']], chapter=7, influence=infl,
+                            ammo=12, bandages=3, weapon=1, maxhp=14, hp=14)
+    e = Bot(ram=savefmt.make_sram(st))
+    e.continue_game()
+    orig = e.press
+    state = {'choice': False}
+
+    def press(btn, a=4, b=6):
+        # the final choice: dialogue shows ACCEPT/REFUSE; press DOWN first to refuse
+        if refuse and btn == 'a' and e.dlg_open():
+            txt = ''.join(chr(e.pb.memory[0x9C00 + 4 * 32 + x] + 32) for x in range(3, 9))
+            if txt.startswith('REFUSE'):
+                orig('down', 2, 4)
+        orig(btn, a, b)
+    e.press = press
+    for _ in range(40):
+        e.fight(max_steps=40)
+        if not [a for a in e.actors() if a['type'] == 3] or e.gs('hp') == 0:
+            break
+    for _ in range(300):
+        e.tick(20)
+        if e.dlg_open():
+            e.press('a', 3, 3)
+        if e.r8('ending_id') != 0xFF and e.r8('game_state') == 1:
+            break
+    return e
+
+
+def test_ending_a_not_tonight():
+    e = _final_battle(20, refuse=True)
+    assert e.r8('ending_id') == 0
+    e.stop()
+
+
+def test_ending_b_empty_vessel():
+    e = _final_battle(80)
+    assert e.r8('ending_id') == 1
+    e.stop()
+
+
+def test_secret_ending_eighth_man():
+    e = _final_battle(10, secret=True, refuse=True)
+    assert e.r8('ending_id') == 2
+    e.stop()
+
+
+def _select_tool(e, tool):
+    for _ in range(6):
+        if e.gs('tool') == tool:
+            return True
+        e.press('select', 2, 4)
+    return e.gs('tool') == tool
+
+
+def test_tools_pistol_bottle_shadow():
+    e = boot_with('indust', 1, 7, flags=['ch1_done', 'indust_open', 'shadow_power', 'ch2_started'], items=['pistol'],
+                  chapter=2, ammo=4, bottles=2, influence=10)
+    # revolver: consumes ammo, raises police alert
+    assert _select_tool(e, 1)
+    e.hold('right', 1); e.press('a', 2, 30)
+    assert e.gs('ammo') == 3 and e.gs('alert') > 0
+    # bottle: consumed
+    assert _select_tool(e, 2)
+    e.press('a', 2, 40)
+    assert e.gs('bottles') == 1
+    # shadow: raises influence
+    assert _select_tool(e, 3)
+    before = e.gs('influence')
+    e.press('a', 2, 30)
+    assert e.gs('influence') == before + 3
+    e.stop()
+
+
+def test_police_alert_spawns_patrol():
+    e = boot_with('strip', 4, 5, flags=['ch1_done'], chapter=1, alert=60)
+    kinds = [a['kind'] for a in e.actors() if a['type'] == 2]
+    assert 3 in kinds, 'police appear when alert is high'
+    e.stop()
+    e = boot_with('strip', 4, 5, flags=['ch1_done'], chapter=1, alert=0)
+    kinds = [a['kind'] for a in e.actors() if a['type'] == 2]
+    assert 3 not in kinds
+    e.stop()

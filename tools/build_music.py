@@ -133,7 +133,7 @@ def generate(pk, hdr, dirs_c):
     # song titles for music player (bank 0 strings are small)
     dirs_c.append('const char * const song_title[%d] = {' % len(names))
     for s in names:
-        assert len(s['title']) <= 18, s['title']
+        assert len(s['title']) <= 16, s['title']
         dirs_c.append('  "%s",' % s['title'])
     dirs_c.append('};')
     return names

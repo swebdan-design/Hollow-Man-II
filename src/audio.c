@@ -312,6 +312,7 @@ void music_play(uint8_t id) {
     if (id == music_cur) return;
     music_stop();
     if (id == 0xFF || id >= NUM_SONGS) return;
+    gs.music_unlock[id >> 3] |= 1 << (id & 7);   /* heard once = unlocked in the Music Player */
     f = song_dir[id];
     far_read(f.bank, f.ptr, hdr, 10);
     CRITICAL {

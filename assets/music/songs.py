@@ -50,7 +50,7 @@ def song(id, title, speed, ch0, ch1, ch2, ch3, loop=True, where=''):
 
 
 # 0 ---------------------------------------------------------------- TITLE
-song('title', 'The Second Shadow', 6,
+song('title', 'Second Shadow', 6,
      'i:3 ' + B("r:16 D4:4 F4:4 E4:8", "A3:24 r:8", "D4:4 F4:4 E4:8 G#4:16", "A4:24 r:8",
                 "D5:8 C5:8 A4:8 F4:8", "E4:16 D4:16", "Bb4:12 A4:4 G4:16", "G#4:16 A4:16"),
      'i:4 ' + B("F3:32", "E3:32", "F3:32", "C#3:32", "F3:32", "A3:32", "D3:32", "D3:16 C#3:16"),
@@ -63,7 +63,7 @@ g_bass = B("D2:6 r:2 D2:4 r:4 A2:4 r:4 C3:4 r:4", "Bb2:6 r:2 Bb2:4 r:4 F2:4 r:4 
            "G2:6 r:2 G2:4 r:4 D2:4 r:4 F2:4 r:4", "A2:6 r:2 A2:4 r:4 E2:4 r:4 C#3:4 r:4")
 g_keys = B("i:2 D4:8 F4:8 C5:8 A4:8", "D4:8 F4:8 A4:8 F4:8",
            "Bb3:8 D4:8 F4:8 D4:8", "A3:8 C#4:8 E4:8 G4:8")
-song('gloam', 'Gloam at Midnight', 5,
+song('gloam', 'Gloam, Midnight', 5,
      'i:0 ' + B("r:32", "r:32", "r:32", "r:32",
                 "r:8 D5:4 F5:4 E5:8 A4:8", "r:8 D5:4 F5:4 G5:8 F5:4 E5:4",
                 "D5:12 C5:4 Bb4:8 A4:8", "G#4:16 A4:16",
