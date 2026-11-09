@@ -12,15 +12,15 @@ ROM = os.path.join(ROOT, 'build', 'HOLLOW_MAN_II_THE_SECOND_SHADOW.gbc')
 
 
 class Emu:
-    def __init__(self, rom=ROM, ram_file=None, sound=False):
+    def __init__(self, rom=ROM, ram=None, sound=False):
+        import io
         kw = dict(window='null', cgb=True, log_level='ERROR')
+        # always supply cartridge RAM explicitly so stale .ram files never leak into tests
+        kw['ram_file'] = io.BytesIO(ram if ram is not None else bytes([0xFF]) * 8192)
         if not sound:
             kw['sound_emulated'] = False
         self.pb = PyBoy(rom, **kw)
         self.pb.set_emulation_speed(0)
-        if ram_file and os.path.exists(ram_file):
-            with open(ram_file, 'rb') as f:
-                self.pb.load_state(f)
 
     def tick(self, n=1):
         for _ in range(n):
@@ -51,6 +51,9 @@ class Emu:
 
     def symbol(self, name):
         return self.pb.symbol_lookup(name)
+
+    def sram(self):
+        return bytes(self.pb.memory[0, 0xA000:0xC000])
 
     def stop(self):
         self.pb.stop(save=False)

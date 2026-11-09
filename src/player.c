@@ -22,10 +22,11 @@ void player_place(uint8_t tx, uint8_t ty, uint8_t dir) BANKED {
 static uint8_t blocked_at(int16_t px, int16_t py) {
     int16_t x0 = px + 3, x1 = px + 12, y0 = py + 9, y1 = py + 15;
     /* walking off an edge is only possible where the map has an exit */
-    if (x0 < 0) return mh.exits[2] == 0xFF;
-    if (y0 < 0) return mh.exits[0] == 0xFF;
-    if (x1 >= (int16_t)mh.w * 16) return mh.exits[3] == 0xFF;
-    if (y1 >= (int16_t)mh.h * 16) return mh.exits[1] == 0xFF;
+    /* ...and only through the main-road lanes (tiles 7-8) where districts join */
+    if (x0 < 0) return mh.exits[2] == 0xFF || ((y0 >> 4) != 7 && (y0 >> 4) != 8) || ((y1 >> 4) != 7 && (y1 >> 4) != 8);
+    if (y0 < 0) return mh.exits[0] == 0xFF || ((x0 >> 4) != 7 && (x0 >> 4) != 8) || ((x1 >> 4) != 7 && (x1 >> 4) != 8);
+    if (x1 >= (int16_t)mh.w * 16) return mh.exits[3] == 0xFF || ((y0 >> 4) != 7 && (y0 >> 4) != 8) || ((y1 >> 4) != 7 && (y1 >> 4) != 8);
+    if (y1 >= (int16_t)mh.h * 16) return mh.exits[1] == 0xFF || ((x0 >> 4) != 7 && (x0 >> 4) != 8) || ((x1 >> 4) != 7 && (x1 >> 4) != 8);
     if (mflags_at(x0 >> 4, y0 >> 4) & MF_SOLID) return 1;
     if (mflags_at(x1 >> 4, y0 >> 4) & MF_SOLID) return 1;
     if (mflags_at(x0 >> 4, y1 >> 4) & MF_SOLID) return 1;

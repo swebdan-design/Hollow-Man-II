@@ -16,7 +16,7 @@ ROM   := $(BUILD)/$(ROMNAME).gbc
 
 CFLAGS  := -Iinclude -I$(GEN) -Wf--opt-code-speed
 LDFLAGS := -Wm-yC -Wl-yt0x1B -Wl-ya1 -autobank -Wb-max=15 -Wm-yoA \
-           -Wm-yn"HOLLOWMAN2" -Wm-ys -Wm-yk"SC" -Wm-yl0x33
+           -Wm-yn"HOLLOWMAN2" -Wm-yk"SC" -Wm-yl0x33 -Wl-m -Wl-j
 
 SRC      := $(wildcard src/*.c)
 ASSET_PY := $(wildcard tools/*.py assets/*/*.py)

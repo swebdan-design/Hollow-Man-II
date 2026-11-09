@@ -130,11 +130,11 @@ B....T.p.B
 B....t...B
 BK.......B
 BKK......B
-BKKK.v...B
+BKKK..v..B
 BBBBBDBBBB
 """, district=2, flags=DARKMAP, title='Apartment 3B')
 apt.door(5, 8, 'strip', 1, 13, 'down')
-apt.sign(5, 7, say("The TV hisses.\nBetween the static,\na face with horns\nflickers once."))
+apt.sign(6, 7, say("The TV hisses.\nBetween the static,\na face with horns\nflickers once."))
 apt.search(7, 3, [say("Behind the dead\nplant: a rosary\nand a note: FOR\nWHEN IT COMES."), special('maxhp_up'),
                   say("Your heart beats\nharder.\nMAX HEALTH UP.")])
 apt.search(5, 1, [say("A child's bed.\nUnder the pillow:\nbandages."), bandage(2)])
@@ -147,12 +147,12 @@ mercy = Map('mercy', 'city', 'city_mercy', 'mercy', """
 RRRR\"\"_.._\"\"RRRR
 rrrr\"\"_.._\"\"rrrr
 BwBD\"\"_.._\"\"DBxB
-F_FF__:..:__FF_F
+F_F___:..:___F_F
 \"_\"___:..:___\"_\"
 ##..............
 ##-------..-----
 \"\"____:..:______
-\"PPPP\":..:\"YY\"y\"
+\"PpPP\":..:\"YY\"y\"
 \"PppP\":..:\"\"\"\"\"\"
 \"PppP\":..:\"\"\"T\"\"
 \"PPPP\":..:\"\"\"\"\"\"
@@ -167,7 +167,7 @@ for x in (7, 8):
 mercy.sign(7, 0, say("POLICE LINE.\nDO NOT CROSS.\nOld Gloam is\nclosed tonight."), cond=('not', 'old_open'))
 mercy.sign(8, 0, say("POLICE LINE.\nDO NOT CROSS."), cond=('not', 'old_open'))
 mercy.patch(3, 12, 'H', 'cellar_open')
-mercy.door(3, 12, 'cellar', 5, 2, 'down', cond='cellar_open')
+mercy.door(3, 12, 'cellar', 5, 1, 'down', cond='cellar_open')
 mercy.search(2, 11, [say("Ash and glass.\nA scrap of paper\nthe fire didn't\nwant."), ev('mercy1')],
              empty="Only ash now.")
 mercy.sign(3, 12,

@@ -160,7 +160,6 @@ void boss_update(actor_t *a) BANKED {
             if (ABS(dx) + ABS(dy) > 36) actor_toward(a, px, py, 10, 1);
             else a->dir = pd;
             if (--a->timer == 0) { a->state = B_AIM; a->timer = 26; a->dir = pd; a->icon = 1; }
-            contact_damage(a, 2);
             break;
         case B_AIM:
             if (--a->timer == 0) {
@@ -259,7 +258,6 @@ void boss_update(actor_t *a) BANKED {
             else actor_step(a, dy < 0 ? DIR_UP : DIR_DOWN, 14, 1);
             a->dir = pd;
         }
-        contact_damage(a, 2);
         break;
 
     case 4: /* ALEC MOTT - ambusher */
@@ -315,7 +313,6 @@ void boss_update(actor_t *a) BANKED {
             sfx_play(5);
             a->aux2 = 70;
         }
-        contact_damage(a, 1);
         break;
 
     case 6: /* VICTOR RUSK - occult */
@@ -348,7 +345,6 @@ void boss_update(actor_t *a) BANKED {
             }
         }
         a->dir = pd;
-        contact_damage(a, 2);
         break;
     }
 }

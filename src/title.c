@@ -291,7 +291,14 @@ void credits_run(uint8_t ending) BANKED {
                 if (credit_lines[line]) {
                     center(y, credit_lines[line]);
                     line++;
-                } else if (++tail > 5) break;
+                } else {
+                    if (tail == 0) {
+                        /* clear every not-yet-visible ring row so old lines never reappear */
+                        uint8_t k;
+                        for (k = 1; k < 14; k++) fill_area(0, (uint8_t)(row + k) & 31, 20, 1, 0);
+                    }
+                    if (++tail > 5) break;
+                }
                 row += 2;
                 y = (uint8_t)((row - 1) & 31);
                 fill_area(0, y, 20, 1, 0);

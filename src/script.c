@@ -228,8 +228,7 @@ static void run_one(uint16_t id) {
         case O_REDRAW:
             fade_out();
             DISPLAY_OFF;
-            map_apply_patches();
-            map_draw_all();
+            map_load(cur_map);   /* reload base grid + patches (handles toggled flags) */
             render_sprites();
             DISPLAY_ON;
             fade_in();

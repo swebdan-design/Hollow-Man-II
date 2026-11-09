@@ -126,7 +126,7 @@ typedef struct {
 #define OBJ_NOISE   8
 
 #define MAX_WARPS 16
-#define MAX_OBJS  28
+#define MAX_OBJS  48
 extern maphdr_t mh;
 extern uint8_t cur_map;
 extern uint8_t map_grid[256];

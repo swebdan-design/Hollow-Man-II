@@ -303,6 +303,7 @@ def anon(ops, mapname=None):
 
 # ---------------------------------------------------------------- maps
 OUTDOOR, RESTRICTED, RAIN, SAFE, DARKMAP = 1, 2, 4, 8, 16
+CITY = OUTDOOR | RAIN
 
 
 class Map:
@@ -533,7 +534,7 @@ def build(pk, hdr, dirs_c, legends, palsets, music_ids, sheets, images, tileset_
                     raise ValueError('map %s exit to unknown %s' % (m.name, e))
                 ex.append(MAPS.index(MAP_BY_NAME[e]))
         es = resolve_script(m.enter) if m.enter else 0xFFFF
-        assert len(m.warps) <= 16 and len(m.objs) <= 28 and len(m.patches) <= 40, m.name
+        assert len(m.warps) <= 16 and len(m.objs) <= 48 and len(m.patches) <= 120, m.name
         blob = [m.w, m.h, tileset_ids[m.ts], palsets[m.pal], 0xFF if m.music is None else music_ids[m.music],
                 m.district, m.flags] + ex + [es & 0xFF, es >> 8, len(m.warps), len(m.objs), len(m.patches)]
         blob += grid
