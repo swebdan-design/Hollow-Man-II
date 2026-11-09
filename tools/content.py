@@ -165,8 +165,39 @@ class Op:
         self.args = args
 
 
-def _text(s, nowait=False, page_lines=4, width=18):
+# target text layout (GBC: 18x4; the GBA build sets 27x4 and REFLOW)
+TEXT_W = 18
+PAGE_LINES = 4
+REFLOW = False
+
+
+def reflow(s):
+    """Re-join GBC hard-wrapped lines into paragraphs for a wider text box.
+    Keeps breaks before 'LABEL:' lines and after all-caps lines followed by prose."""
+    import re
+    pages = []
+    for pg in s.split('|'):
+        lines = pg.split('\n')
+        out = [lines[0]]
+        for ln in lines[1:]:
+            prev = out[-1]
+            hard = bool(re.match(r'^[A-Z0-9][A-Z0-9 .\-]*:', ln.strip()))
+            if prev.upper() == prev and any(ch.isalpha() for ch in prev) and ln.upper() != ln:
+                hard = True
+            if hard:
+                out.append(ln)
+            else:
+                out[-1] = prev.rstrip() + ' ' + ln.lstrip()
+        pages.append('\n'.join(out))
+    return '|'.join(pages)
+
+
+def _text(s, nowait=False, page_lines=None, width=None):
     """Wrap text: '|' forces a page break. Returns bytes with \\n \\f codes."""
+    page_lines = page_lines or PAGE_LINES
+    width = width or TEXT_W
+    if REFLOW:
+        s = reflow(s)
     out = []
     pages = s.split('|')
     first = True
@@ -200,7 +231,9 @@ def _text(s, nowait=False, page_lines=4, width=18):
 
 
 def say(*texts):
-    return [Op('SAY', _text(t)) for t in texts]
+    for t in texts:
+        _text(t)          # validate early (GBC layout)
+    return [Op('SAY', t, False) for t in texts]
 
 
 def iff(cond, then, els=None):
@@ -208,7 +241,8 @@ def iff(cond, then, els=None):
 
 
 def choice(question, a, b, on_a, on_b):
-    return [Op('SAY', _text(question, nowait=True)), Op('CHOICE', a, b, flatten(on_a), flatten(on_b))]
+    _text(question, nowait=True)
+    return [Op('SAY', question, True), Op('CHOICE', a, b, flatten(on_a), flatten(on_b))]
 
 
 def setf(f): return [Op('SETF', flag(f))]
@@ -400,7 +434,7 @@ def compile_script(name, ops, mapname):
         k = o.kind
         if k == 'SAY':
             code.append(OP['SAY'])
-            code.extend(o.args[0])
+            code.extend(_text(o.args[0], nowait=o.args[1]))
         elif k == 'IF':
             cond, then, els = o.args
             code.append(OP['IF'])

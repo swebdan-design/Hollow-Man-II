@@ -230,7 +230,7 @@ def test_text_fits_textbox():
         while stack:
             o = stack.pop()
             if o.kind == 'SAY':
-                txt = o.args[0].rstrip(b'\0\v').decode()
+                txt = c._text(o.args[0], nowait=o.args[1]).rstrip(b'\0\v').decode()
                 for page in txt.split('\f'):
                     lines = page.split('\n')
                     assert len(lines) <= 4, (name, page)

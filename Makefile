@@ -1,5 +1,6 @@
 # HOLLOW MAN: THE SECOND SHADOW - by Synth Centric
 # Build: make            (ROM -> build/HOLLOW_MAN_THE_SECOND_SHADOW.gbc)
+#        make gba        (GBA ROM -> build/gba/HOLLOW_MAN_THE_SECOND_SHADOW.gba)
 #        make test       (host-side tests + emulator smoke tests)
 #        make release    (release/ ROM, zips)
 # Requires GBDK-2020 (set GBDK_HOME) and Python 3 with Pillow.
@@ -22,7 +23,7 @@ SRC      := $(wildcard src/*.c)
 ASSET_PY := $(wildcard tools/*.py assets/*/*.py)
 STAMP    := $(GEN)/.stamp
 
-.PHONY: all clean test release
+.PHONY: all clean test release gba harness
 
 all: $(ROM)
 
@@ -47,7 +48,15 @@ $(ROM): $(STAMP) $(patsubst src/%.c,$(OBJ)/%.o,$(SRC))
 	  $(patsubst $(GEN)/%.c,$(OBJ)/gen/%.o,$(GEN)/gen_dirs.c $(wildcard $(GEN)/data_bank*.c))
 	$(PYTHON) tools/romcheck.py $@
 
-test: $(ROM)
+gba:
+	$(MAKE) -C gba
+
+harness: $(BUILD)/gba_harness
+$(BUILD)/gba_harness: tools/gba_harness.c
+	@mkdir -p $(BUILD)
+	cc -O2 -o $@ $< -lmgba
+
+test: $(ROM) gba harness
 	$(PYTHON) -m pytest -q tests
 
 release: $(ROM)
