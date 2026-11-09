@@ -1,5 +1,10 @@
 # Building HOLLOW MAN: THE SECOND SHADOW
 
+Two ROMs are built from this repository: the **Game Boy Color** version (GBDK-2020) and the
+**Game Boy Advance** version (arm-none-eabi-gcc). Both share the world, story scripts and
+music sources in `assets/maps` and `assets/music`. The GBA version has its own overhauled art
+in `assets/gba`.
+
 The ROM is built entirely from the sources in this repository. All graphics, maps, scripts
 and music are stored as Python/ASCII source assets and converted at build time.
 
@@ -42,7 +47,27 @@ If GBDK-2020 is installed elsewhere, point `GBDK_HOME` at the folder that contai
 <https://github.com/gbdk-2020/gbdk-2020/releases/tag/4.3.0>; the Makefile needs a POSIX shell
 (on Windows use MSYS2 or WSL).
 
-## What the build does
+## Game Boy Advance build
+
+| Tool | Version used |
+|---|---|
+| arm-none-eabi-gcc + newlib | 13.2.1 (Ubuntu `gcc-arm-none-eabi`, `libnewlib-arm-none-eabi`) |
+| libmgba (tests only) | 0.10.2 (Ubuntu `libmgba-dev`) |
+
+```sh
+sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi   # compiler
+sudo apt-get install libmgba-dev                                  # optional: test harness
+make gba            # -> build/gba/HOLLOW_MAN_THE_SECOND_SHADOW.gba ("GBA HEADER OK")
+make harness        # -> build/gba_harness (headless mGBA driver used by the tests)
+```
+
+The GBA build needs no devkitPro: `gba/runtime/crt0.s` (startup + IRQ handler) and
+`gba/runtime/gba.ld` (linker script) are part of the project, and `tools/gbafix.py` writes a
+valid cartridge header (boot logo, complement check). `tools/build_gba_assets.py` generates all
+GBA data into `build/gba/gen/`, re-using the shared map/script/music compilers with text
+re-wrapped for the GBA's wider dialogue box. The ROM declares 32 KB battery SRAM (`SRAM_V113`).
+
+## What the build does (GBC)
 
 1. `tools/build_assets.py` runs the asset pipeline into `build/gen/`:
    - `build_tiles.py` — font, UI tiles, three metatile tilesets, background palette sets

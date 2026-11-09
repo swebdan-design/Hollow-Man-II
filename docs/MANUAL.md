@@ -38,9 +38,12 @@ ghosts. She believes in fingerprints. She is going to find the end of this trail
 
 ## GETTING STARTED
 
-Insert the Game Pak (or load `HOLLOW_MAN_THE_SECOND_SHADOW.gbc` in a Game Boy Color
-emulator) and switch the power ON. This game runs only on Game Boy Color hardware (or
-Game Boy Advance / compatible emulators running in Game Boy Color mode).
+The game comes in two versions with the same story and controls:
+
+- **Game Boy Advance** — `HOLLOW_MAN_THE_SECOND_SHADOW.gba` (overhauled full-colour graphics).
+- **Game Boy Color** — `HOLLOW_MAN_THE_SECOND_SHADOW.gbc` (runs only in Game Boy Color mode).
+
+Insert the Game Pak (or load the ROM in an emulator) and switch the power ON.
 
 At the title screen press **START**. The main menu offers:
 

@@ -1,6 +1,15 @@
 # Project status & engine design
 
-## Status: release 1.0 complete
+## Status: release 1.1 — Game Boy Advance + Game Boy Color
+
+The GBA version (`gba/`) is a port of the GBC engine: the gameplay modules (player, actors,
+bosses, script VM, menus, saves) are shared code paths adapted to GBA hardware; the hardware
+layer (core, text, map, render, audio, save, runtime) is GBA-specific; the art is all new
+(`assets/gba`). World, scripts and music data come from the same sources as the GBC version.
+
+GBA display: BG0 map (4bpp metatiles, auto wall-tops) or 8bpp illustration, BG1 text, BG2
+panels, OBJ 16x32 characters / 32x64 big actors / 64x64 Second Shadow; DMG sound channels for
+music. Release 1.0 (GBC only) notes follow.
 
 Everything in the brief is implemented and the ROM builds, validates and passes 30 automated
 tests (see TESTING.md). Remaining gaps are verification gaps, not missing systems:

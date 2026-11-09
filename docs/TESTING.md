@@ -1,4 +1,4 @@
-# HOLLOW MAN — Testing Report
+# HOLLOW MAN: THE SECOND SHADOW — Testing Report
 
 All results below were produced in this development environment. Nothing here was tested on
 real Game Boy Color hardware or a flash cartridge.
@@ -32,7 +32,7 @@ real Game Boy Color hardware or a flash cartridge.
 Compiler output contains only SDCC informational warning 110 ("conditional flow changed by
 optimizer") in `actors.c`/`boss.c`, caused by constant table lookups; it is harmless.
 
-## Automated tests (`make test` → 30 tests, all passing)
+## Automated tests (`make test` → 46 tests, all passing: 30 GBC/host + 16 GBA)
 
 ### Host-side world validation — `tests/test_world.py` (11 tests)
 
@@ -85,9 +85,36 @@ The tests for later chapters start from crafted battery saves (the save format i
   (peak sample checked), NR52 = 0xFF.
 - `release/screenshots/` — 16 genuine PyBoy captures produced by `tools/screenshots.py`.
 
+## Game Boy Advance version
+
+| | |
+|---|---|
+| Compiler | arm-none-eabi-gcc 13.2.1 + newlib, own crt0/linker script |
+| Emulator | **mGBA 0.10.2 (libmgba)**, headless, driven by `build/gba_harness` (`tools/gba_harness.c`) with scripted inputs |
+| ROM | `HOLLOW_MAN_THE_SECOND_SHADOW.gba`, 571,904 bytes; header logo + complement check valid; `SRAM_V113` save type; 32 KB SRAM |
+
+`tests/test_gba.py` — **16 tests, all passing**, running the real GBA ROM:
+
+| Test | Result |
+|---|---|
+| Cartridge header (logo, fixed byte, complement, save-type marker) | pass |
+| Title illustration + main menu (NEW GAME, dimmed CONTINUE) | pass |
+| New Game → intro → Chapter 1, movement | pass |
+| Save via pause menu → SRAM (read back through the cartridge bus) → Continue | pass |
+| Corrupt save ignored | pass |
+| Power puzzle, water-level puzzle, church sequence, records lockdown | pass |
+| Death → Game Over → Retry | pass |
+| Music Player (plays/stops via the real driver; credits Synth Centric) | pass |
+| **Chapter 1 full playthrough** with scripted inputs (crate puzzle, keys, Eddie Voss) | pass |
+| Endings A / B / secret (Rusk's health is lowered by the test so the simple bot wins quickly; the test checks the ending logic) | pass |
+| Revolver ammo/alert; police patrols at high alert | pass |
+
+Also: `tools/gba_map_tour.py` boots all 39 maps on the GBA build (all load and render),
+`tools/gba_screenshots.py` produced the 15 captures in `release/screenshots_gba/`.
+
 ## Not tested / limitations
 
-- **Real hardware:** not tested. No flash cart or physical GBC was available. Timing-sensitive
+- **Real hardware:** not tested for either version (no GBC, GBA or flash cart available). No flash cart or physical GBC was available. Timing-sensitive
   code (VBlank music driver, VRAM writes via GBDK's STAT-safe routines, double-speed mode) has
   only been verified in PyBoy.
 - **Other emulators** (SameBoy, Emulicious, mGBA, BGB): not run here; PyBoy only.

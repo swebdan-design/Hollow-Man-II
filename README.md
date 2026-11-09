@@ -1,12 +1,16 @@
 # HOLLOW MAN: THE SECOND SHADOW
 ### by Synth Centric
 
-An original top-down survival-horror detective adventure for the **Nintendo Game Boy Color**,
-written in C with GBDK-2020.
+An original top-down survival-horror detective adventure, in two versions built from one
+shared story, world and soundtrack:
 
-- **Play:** `release/HOLLOW_MAN_THE_SECOND_SHADOW.gbc` in any Game Boy Color emulator.
+| Version | ROM | Engine |
+|---|---|---|
+| **Game Boy Advance** (overhauled graphics) | `release/HOLLOW_MAN_THE_SECOND_SHADOW.gba` | C, arm-none-eabi-gcc, own runtime (`gba/`) |
+| **Game Boy Color** | `release/HOLLOW_MAN_THE_SECOND_SHADOW.gbc` | C, GBDK-2020 (`src/`) |
+
 - **Manual:** [docs/MANUAL.md](docs/MANUAL.md) · **Controls:** [docs/CONTROLS.md](docs/CONTROLS.md)
-- **Build:** [docs/BUILD.md](docs/BUILD.md) — `sh tools/setup_gbdk.sh && make GBDK_HOME=toolchain/gbdk`
+- **Build:** [docs/BUILD.md](docs/BUILD.md) — `make` (GBC) · `make gba` (GBA)
 - **Tests:** [docs/TESTING.md](docs/TESTING.md) — `make test`
 - **Soundtrack:** [docs/SOUNDTRACK.md](docs/SOUNDTRACK.md)
 - **Design & status:** [docs/STATUS.md](docs/STATUS.md)
