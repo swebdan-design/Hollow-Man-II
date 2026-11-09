@@ -6,6 +6,23 @@ Every cue is an original composition written for the Game Boy Color's four-chann
 hardware. Nothing is sampled or streamed: the game's own driver (`src/audio.c`) plays note
 data compiled from `assets/music/songs.py` on the real APU channels.
 
+## Recorded tracks (GBA version)
+
+The GBA version can also play Synth Centric's own recordings in place of a chip cue. They are
+listed in `assets/music/audio/tracks.py` and converted at build time (`tools/audio_convert.py`:
+mono, signed 8-bit, 18,157 Hz) then streamed by DMA to the GBA's Direct Sound channel A. Sound
+effects keep playing on the Game Boy channels on top. The GBC version cannot play recordings
+and keeps the chip arrangement for these cues.
+
+| Cue | Recording | Length | Music Player title |
+|---|---|---|---|
+| Title screen | `assets/music/audio/title_intro.wav` (01. Intro) | 68.9 s, loops | Intro |
+
+**Adding another recording:** put the WAV (16/24/32-bit, any rate, mono or stereo) in
+`assets/music/audio/`, add a line to `TRACKS` in `tracks.py` with the cue id from
+`assets/music/songs.py` (e.g. `'gloam'`), a title of up to 16 characters and whether it loops,
+then run `make gba`. Each minute of audio adds about 1.1 MB to the ROM (GBA limit: 32 MB).
+
 ## The cues
 
 | # | Title | Where it plays | Mood / idea | Tempo |

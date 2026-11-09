@@ -28,6 +28,7 @@ typedef struct { const uint8_t *tiles; uint16_t ntiles; const uint8_t *pals; uin
                  const uint16_t *mt; const uint8_t *flags; uint8_t nmt; uint8_t wall_mt, top_mt; } tileset_t;
 typedef struct { uint8_t r, g, b; uint16_t amt, bright; } mood_t;
 typedef struct { const uint8_t *px; const uint16_t *pal; } image_t;
+typedef struct { const int8_t *data; uint32_t len; uint32_t loop; } stream_t;  /* recorded track */
 #include "gba_data.h"
 
 void far_read(uint8_t bank, const void *src, void *dst, uint16_t len);

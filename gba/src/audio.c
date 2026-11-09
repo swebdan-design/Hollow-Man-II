@@ -266,8 +266,60 @@ static void sfx_tick(void) {
 }
 
 /* ------------------------------------------------------------------ public */
+/* ---------------------------------------------------------------- recorded tracks
+ * Signed 8-bit mono at 18157 Hz = exactly 304 samples per frame. DMA1 streams straight
+ * from ROM into FIFO A; the VBlank tick counts samples and re-arms the DMA at the loop. */
+#define ST_RATE_RELOAD (65536 - 924)
+#define ST_PER_FRAME 304
+static const int8_t *st_data;
+static uint32_t st_len, st_loop, st_pos;
+static uint8_t st_on;
+
+static void stream_arm(uint32_t pos) {
+    REG_DMA1CNT_H = 0;
+    REG_DMA1SAD = (uint32_t)(st_data + pos);
+    REG_DMA1DAD = REG_FIFO_A;
+    REG_DMA1CNT_H = 0xB640;            /* enable, FIFO timing, repeat, 32-bit, fixed dest */
+}
+
+static void stream_stop(void) {
+    st_on = 0;
+    REG_TM0CNT_H = 0;
+    REG_DMA1CNT_H = 0;
+    REG_SNDDSCNT = 0x0002 | 0x0800;    /* DMG 100%, FIFO A reset, DS off */
+}
+
+static void stream_start(const stream_t *s) {
+    stream_stop();
+    st_data = s->data; st_len = s->len; st_loop = s->loop; st_pos = 0;
+    REG_SNDDSCNT = 0x0002 | 0x0004 | 0x0300 | 0x0800;   /* DMG 100%, DS A 100% L+R, timer 0 */
+    stream_arm(0);
+    REG_TM0CNT_L = ST_RATE_RELOAD;
+    REG_TM0CNT_H = 0x0080;
+    st_on = 1;
+}
+
+static void stream_tick(void) {
+    if (!st_on) return;
+    st_pos += ST_PER_FRAME;
+    if (st_pos >= st_len) {
+        if (st_loop == 0xFFFFFFFF) { stream_stop(); return; }
+        st_pos = st_loop + (st_pos - st_len);
+        stream_arm(st_pos);
+    }
+    {   /* feed the Music Player visualiser from the waveform */
+        uint8_t c;
+        for (c = 0; c < 4; c++) {
+            int8_t v = st_data[st_pos + c * 61];
+            uint8_t l = (uint8_t)((v < 0 ? -v : v) >> 3);
+            if (l > vis_level[c]) vis_level[c] = l;
+        }
+    }
+}
+
 void audio_tick(void) {
     uint8_t c, ob;
+    stream_tick();
     for (c = 0; c < 4; c++) if (vis_level[c] && (frame_ctr & 3) == 0) vis_level[c]--;
     if (playing) {
         ob = 0;
@@ -291,6 +343,7 @@ void audio_init(void) {
 }
 
 void music_stop(void) {
+    stream_stop();
     {
         playing = 0;
         music_cur = 0xFF;
@@ -303,6 +356,14 @@ void music_play(uint8_t id) {
     far_t f;
     uint8_t hdr[10], c;
     if (id == music_cur) return;
+    if (id < NUM_SONGS && stream_dir[id].data) {
+        /* this cue is one of Synth Centric's recorded tracks */
+        music_stop();
+        gs.music_unlock[id >> 3] |= 1 << (id & 7);
+        if (music_on) stream_start(&stream_dir[id]);
+        music_cur = id;
+        return;
+    }
     music_stop();
     if (id == 0xFF || id >= NUM_SONGS) return;
     gs.music_unlock[id >> 3] |= 1 << (id & 7);   /* heard once = unlocked in the Music Player */

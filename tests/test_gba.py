@@ -232,3 +232,16 @@ def test_gba_tools_and_police():
     e = boot_with('strip', 4, 5, flags=['ch1_done'], chapter=1, alert=60)
     assert 3 in [a['kind'] for a in e.actors() if a['type'] == 2]
     e.stop()
+
+
+def test_gba_recorded_title_track():
+    """Synth Centric's recorded 'Intro' streams through Direct Sound on the title screen."""
+    e = GBot()
+    e.tick(150)
+    assert e.r8('music_cur') == 0 and e.r8('st_on') == 1
+    e.press('start'); e.tick(30)
+    e.press('down', 2, 4); e.press('a'); e.tick(90)    # music player stops it
+    assert e.r8('st_on') == 0
+    e.press('a'); e.tick(30)                            # ...and plays it again (track 01)
+    assert e.r8('st_on') == 1
+    e.stop()

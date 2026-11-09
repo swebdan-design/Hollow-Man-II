@@ -19,7 +19,7 @@ LDFLAGS := $(ARCH) -nostartfiles -T runtime/gba.ld -Wl,--gc-sections -Wl,-Map,$(
 
 SRC  := $(wildcard src/*.c)
 OBJS := $(patsubst src/%.c,$(BUILD)/obj/%.o,$(SRC)) $(BUILD)/obj/gba_data.o $(BUILD)/obj/crt0.o
-ASSET_PY := $(wildcard $(ROOT)/tools/*.py $(ROOT)/assets/*/*.py)
+ASSET_PY := $(wildcard $(ROOT)/tools/*.py $(ROOT)/assets/*/*.py $(ROOT)/assets/music/audio/*)
 
 .PHONY: all clean
 all: $(ROM)

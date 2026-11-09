@@ -81,6 +81,14 @@ typedef volatile uint32_t vu32;
 #define DMA_16 0x00000000
 #define DMA_SRC_FIXED 0x01000000
 
+/* Direct Sound: DMA1 feeds FIFO A, timer 0 sets the sample rate */
+#define REG_DMA1SAD   (*(vu32 *)0x040000BC)
+#define REG_DMA1DAD   (*(vu32 *)0x040000C0)
+#define REG_DMA1CNT_H (*(vu16 *)0x040000C6)
+#define REG_FIFO_A    0x040000A0
+#define REG_TM0CNT_L  (*(vu16 *)0x04000100)
+#define REG_TM0CNT_H  (*(vu16 *)0x04000102)
+
 /* sound (DMG-compatible channels) */
 #define REG_SND1SWEEP (*(vu16 *)0x04000060)
 #define REG_SND1CNT   (*(vu16 *)0x04000062)

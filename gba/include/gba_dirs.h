@@ -6,6 +6,7 @@ extern const far_t song_dir[];
 extern const uint16_t note_table[84];
 extern const char * const song_title[];
 extern const image_t image_dir[];
+extern const stream_t stream_dir[];
 extern const far_t map_dir[];
 extern const tileset_t tilesets[];
 extern const mood_t moods[];

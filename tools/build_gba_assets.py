@@ -414,6 +414,32 @@ def main(outdir, preview_dir):
             im.save(os.path.join(preview_dir, 'gba_img_%s.png' % n))
     code.append('const image_t image_dir[%d] = {\n%s\n};' % (len(img_lines), '\n'.join(img_lines)))
 
+    # recorded tracks (Synth Centric) replace chip cues in the GBA version
+    import songs as song_defs
+    sys.path.insert(0, os.path.join(ROOT, 'assets', 'music', 'audio'))
+    import tracks
+    import audio_convert
+    for sd in song_defs.SONGS:
+        if sd['id'] in tracks.TRACKS:
+            sd['title'] = tracks.TRACKS[sd['id']][1]
+    stream_lines = []
+    for sd in song_defs.SONGS:
+        t = tracks.TRACKS.get(sd['id'])
+        if not t:
+            stream_lines.append('  { 0, 0, 0 },')
+            continue
+        fname, title, loop = t
+        data, secs = audio_convert.convert(os.path.join(ROOT, 'assets', 'music', 'audio', fname))
+        n = len(data) - len(data) % 4
+        data = data[:n]
+        # guard: DMA can run a little past the end before the VBlank tick re-arms it
+        data += data[:4096] if loop else bytes(4096)
+        code.append(c_array('stream_%s' % sd['id'], data).replace('const uint8_t', 'const int8_t', 1)
+                    .replace('const int8_t stream', 'const int8_t stream'))
+        stream_lines.append('  { (const int8_t *)stream_%s, %d, %s },' % (sd['id'], n, '0' if loop else '0xFFFFFFFF'))
+        print('recorded track %s: %s, %.1f s, %d bytes' % (sd['id'], fname, secs, n))
+    code.append('const stream_t stream_dir[%d] = {\n%s\n};' % (len(stream_lines), '\n'.join(stream_lines)))
+
     # music (shared driver format) + world content (text re-wrapped for the GBA box)
     songs = build_music.generate(pk, hdr, dirs_c)
     content.TEXT_W = 27

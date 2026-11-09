@@ -7,6 +7,7 @@
  *   peek ADDR N      print N bytes (hex) read from the bus
  *   poke ADDR VAL    write a byte
  *   save PATH        write the cartridge save data
+ *   audio N PATH     run N frames and write the audio output to a 48 kHz stereo WAV
  *   quit
  * Every command answers with one line starting with "ok". */
 #include <stdio.h>
@@ -16,6 +17,7 @@
 #include <mgba/core/core.h>
 #include <mgba-util/vfs.h>
 #include <mgba/core/log.h>
+#include <mgba/core/blip_buf.h>
 #include <stdarg.h>
 
 static void nolog(struct mLogger *l, int cat, enum mLogLevel lvl, const char *fmt, va_list a) {
@@ -83,6 +85,33 @@ int main(int argc, char **argv) {
             fclose(f);
             free(sram);
             printf("ok %zu\n", n);
+        } else if (!strcmp(cmd, "audio")) {
+            char path[400];
+            int n = 0, i;
+            struct blip_t *L = core->getAudioChannel(core, 0), *R = core->getAudioChannel(core, 1);
+            static short buf[8192 * 2];
+            FILE *f;
+            uint32_t total = 0;
+            sscanf(line, "%*s %d %399s", &n, path);
+            core->setAudioBufferSize(core, 8192);
+            blip_set_rates(L, core->frequency(core), 48000);
+            blip_set_rates(R, core->frequency(core), 48000);
+            f = fopen(path, "wb");
+            fwrite("RIFF\0\0\0\0WAVEfmt \x10\0\0\0\x01\0\x02\0\x80\xbb\0\0\0\xee\x02\0\x04\0\x10\0data\0\0\0\0", 1, 44, f);
+            for (i = 0; i < n; i++) {
+                int avail;
+                core->runFrame(core);
+                avail = blip_samples_avail(L);
+                if (avail > 8192) avail = 8192;
+                blip_read_samples(L, buf, avail, 1);
+                blip_read_samples(R, buf + 1, avail, 1);
+                fwrite(buf, 4, avail, f);
+                total += avail * 4;
+            }
+            fseek(f, 4, SEEK_SET); { uint32_t v = total + 36; fwrite(&v, 4, 1, f); }
+            fseek(f, 40, SEEK_SET); fwrite(&total, 4, 1, f);
+            fclose(f);
+            printf("ok %u\n", total);
         } else if (!strcmp(cmd, "quit")) {
             printf("ok\n");
             break;

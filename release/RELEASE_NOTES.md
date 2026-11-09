@@ -21,6 +21,10 @@ A standalone game (not a sequel).
   box and a HUD strip.
 - GBC title: a fog halo behind Hollow Man so the black balaclava no longer vanishes into black.
 
+- **Recorded music (GBA):** Synth Centric's own track "Intro" now plays on the GBA title
+  screen, streamed through the GBA's sample channel (8-bit, 18 kHz). More tracks can be dropped
+  in (see docs/SOUNDTRACK.md).
+
 ## Controls (both versions)
 D-Pad move · **A** talk/search/use (interaction first, then equipped tool) · **B** strike ·
 hold **B** heavy strike · **SELECT** cycle tool · **START** pause menu. (GBA: L/R unused.)
@@ -42,8 +46,8 @@ GBC: SameBoy, Emulicious, mGBA, BGB, etc., in Game Boy Color mode.
 - Chapters 2–7 verified by bots, crafted saves and a progression simulator, not a full human
   playthrough; balance tuned against bots.
 - Estimated playtime 1.5–3 hours.
-- The GBA version reuses the Game Boy sound channels (same soundtrack as the GBC); it does not
-  use the GBA's sample (Direct Sound) channels.
+- The GBA version plays the recorded "Intro" on the title screen; all other cues still use the
+  Game Boy sound channels (same chip soundtrack as the GBC).
 - Music not reviewed by ear in this environment (output verified only).
 
 ## Credits
