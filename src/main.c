@@ -1,4 +1,4 @@
-/* main.c - HOLLOW MAN II: THE SECOND SHADOW by Synth Centric
+/* main.c - HOLLOW MAN: THE SECOND SHADOW by Synth Centric
  * Entry point: hardware init, then title -> menu -> game state machine. */
 #include "hm.h"
 

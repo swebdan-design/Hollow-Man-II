@@ -1,4 +1,4 @@
-# HOLLOW MAN II — Testing Report
+# HOLLOW MAN — Testing Report
 
 All results below were produced in this development environment. Nothing here was tested on
 real Game Boy Color hardware or a flash cartridge.
@@ -17,8 +17,8 @@ real Game Boy Color hardware or a flash cartridge.
 
 | Field | Value | Check |
 |---|---|---|
-| File | `HOLLOW_MAN_II_THE_SECOND_SHADOW.gbc`, 524,288 bytes (512 KB, 32 banks) | ROM size code 0x04 matches file size ✔ |
-| Title | `HOLLOWMAN2` | ✔ |
+| File | `HOLLOW_MAN_THE_SECOND_SHADOW.gbc`, 524,288 bytes (512 KB, 32 banks) | ROM size code 0x04 matches file size ✔ |
+| Title | `HOLLOWMAN` | ✔ |
 | CGB flag (0x143) | 0xC0 — Game Boy Color only | ✔ |
 | Cartridge type (0x147) | 0x1B — MBC5 + RAM + BATTERY | ✔ |
 | RAM size (0x149) | 0x02 — 8 KB | ✔ |
@@ -27,7 +27,7 @@ real Game Boy Color hardware or a flash cartridge.
 | Global checksum | valid | ✔ |
 | Linker | no unresolved symbols, no bank overflow (bank 0 77% used; code banks 1–3; data banks 16–21) | ✔ |
 | Clean rebuild | `make clean && make` produces a byte-identical ROM (SHA-1 compared) | ✔ |
-| Rebuild from source zip | `tools/make_release.py` extracts `HOLLOW_MAN_II_SOURCE.zip` into a temp dir, builds it, and requires a byte-identical ROM | ✔ IDENTICAL — SHA-1 94bec7e5e061979471da03944fdcc7057d76ec4f |
+| Rebuild from source zip | `tools/make_release.py` extracts `HOLLOW_MAN_SOURCE.zip` into a temp dir, builds it, and requires a byte-identical ROM | ✔ IDENTICAL — SHA-1 94bec7e5e061979471da03944fdcc7057d76ec4f |
 
 Compiler output contains only SDCC informational warning 110 ("conditional flow changed by
 optimizer") in `actors.c`/`boss.c`, caused by constant table lookups; it is harmless.

@@ -1,4 +1,4 @@
-"""HOLLOW MAN II: THE SECOND SHADOW - original soundtrack by Synth Centric.
+"""HOLLOW MAN: THE SECOND SHADOW - original soundtrack by Synth Centric.
 
 Channels: 0 = pulse lead, 1 = pulse harmony/arp, 2 = wave bass, 3 = noise drums.
 Rows per bar = 32 (16th notes = 2 rows) unless noted.  speed = frames per row.

@@ -1,4 +1,4 @@
-"""Original 8x8 font for HOLLOW MAN II.  Glyphs are 5 px wide (cols 0-4),
+"""Original 8x8 font for HOLLOW MAN.  Glyphs are 5 px wide (cols 0-4),
 7 px cap height, drawn at an offset of 1 px inside each 8x8 cell.
 Characters map to tiles 0..95 = ASCII 32..127.  Codes 127+ are reused for
 special symbols (see SPECIAL)."""

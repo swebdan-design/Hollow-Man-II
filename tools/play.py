@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from emu import Emu, load_symbols, ROOT  # noqa
 
-SYM = load_symbols(os.path.join(ROOT, 'build', 'HOLLOW_MAN_II_THE_SECOND_SHADOW.noi'))
+SYM = load_symbols(os.path.join(ROOT, 'build', 'HOLLOW_MAN_THE_SECOND_SHADOW.noi'))
 GS_OFF = dict(map=6, px=7, py=8, pdir=9, hp=10, maxhp=11, chapter=12, influence=13, alert=14,
               weapon=15, tool=16, ammo=17, bandages=18, bottles=19, items=20, evidence=24, flags=29)
 

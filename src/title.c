@@ -227,7 +227,7 @@ void music_player(void) BANKED {
 
 /* ------------------------------------------------------------------ credits */
 static const char *const credit_lines[] = {
-    "HOLLOW MAN II",
+    "HOLLOW MAN",
     "THE SECOND SHADOW",
     "",
     "by Synth Centric",

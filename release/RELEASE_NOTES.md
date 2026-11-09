@@ -1,4 +1,4 @@
-# HOLLOW MAN II: THE SECOND SHADOW
+# HOLLOW MAN: THE SECOND SHADOW
 ### by Synth Centric — Release 1.0 (Game Boy Color)
 
 A top-down survival-horror detective adventure for the Nintendo Game Boy Color. A masked man
@@ -6,9 +6,9 @@ in a brown tweed suit hunts the seven men behind the Mercy Street killings — w
 with horns walks in his shadow.
 
 ## Files
-- `HOLLOW_MAN_II_THE_SECOND_SHADOW.gbc` — the game (512 KB, MBC5 + 8 KB battery RAM, CGB only)
-- `HOLLOW_MAN_II_SOURCE.zip` — complete source; rebuilds this exact ROM (see docs/BUILD.md)
-- `HOLLOW_MAN_II_COMPLETE.zip` — ROM, manual, docs, release notes, screenshots, source zip
+- `HOLLOW_MAN_THE_SECOND_SHADOW.gbc` — the game (512 KB, MBC5 + 8 KB battery RAM, CGB only)
+- `HOLLOW_MAN_SOURCE.zip` — complete source; rebuilds this exact ROM (see docs/BUILD.md)
+- `HOLLOW_MAN_COMPLETE.zip` — ROM, manual, docs, release notes, screenshots, source zip
 - `screenshots/` — genuine emulator captures (PyBoy, CGB mode)
 
 ## Controls

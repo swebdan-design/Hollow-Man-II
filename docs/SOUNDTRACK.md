@@ -1,4 +1,4 @@
-# HOLLOW MAN II: THE SECOND SHADOW — Original Soundtrack
+# HOLLOW MAN: THE SECOND SHADOW — Original Soundtrack
 
 ### Music by **Synth Centric**
 

@@ -10,7 +10,7 @@ import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REL = os.path.join(ROOT, 'release')
-ROMNAME = 'HOLLOW_MAN_II_THE_SECOND_SHADOW.gbc'
+ROMNAME = 'HOLLOW_MAN_THE_SECOND_SHADOW.gbc'
 
 
 def sha1(p):
@@ -27,12 +27,12 @@ def main():
     # source archive: every tracked file (git ls-files) + uncommitted tracked changes
     files = subprocess.check_output(['git', 'ls-files'], cwd=ROOT).decode().split('\n')
     files = [f for f in files if f and not f.startswith('release/')]
-    src_zip = os.path.join(REL, 'HOLLOW_MAN_II_SOURCE.zip')
+    src_zip = os.path.join(REL, 'HOLLOW_MAN_SOURCE.zip')
     with zipfile.ZipFile(src_zip, 'w', zipfile.ZIP_DEFLATED) as z:
         for f in files:
             p = os.path.join(ROOT, f)
             if os.path.isfile(p):
-                z.write(p, os.path.join('HOLLOW_MAN_II_SOURCE', f))
+                z.write(p, os.path.join('HOLLOW_MAN_SOURCE', f))
     print('source zip', src_zip, len(files), 'files')
 
     # verify: extract and rebuild from scratch, ROM must be byte-identical
@@ -42,7 +42,7 @@ def main():
             bad = z.testzip()
             assert bad is None, bad
             z.extractall(td)
-        d = os.path.join(td, 'HOLLOW_MAN_II_SOURCE')
+        d = os.path.join(td, 'HOLLOW_MAN_SOURCE')
         r = subprocess.run(['make', 'GBDK_HOME=' + gbdk], cwd=d, capture_output=True, text=True)
         if r.returncode:
             print(r.stdout[-2000:], r.stderr[-2000:])
@@ -54,9 +54,9 @@ def main():
             sys.exit('rebuilt ROM differs from release ROM')
 
     # complete release zip
-    comp = os.path.join(REL, 'HOLLOW_MAN_II_COMPLETE.zip')
+    comp = os.path.join(REL, 'HOLLOW_MAN_COMPLETE.zip')
     with zipfile.ZipFile(comp, 'w', zipfile.ZIP_DEFLATED) as z:
-        base = 'HOLLOW_MAN_II_THE_SECOND_SHADOW'
+        base = 'HOLLOW_MAN_THE_SECOND_SHADOW'
         z.write(out_rom, os.path.join(base, ROMNAME))
         for doc in ('MANUAL.md', 'CONTROLS.md', 'SOUNDTRACK.md', 'BUILD.md', 'TESTING.md'):
             p = os.path.join(ROOT, 'docs', doc)
@@ -67,7 +67,7 @@ def main():
         if os.path.isdir(shots):
             for f in sorted(os.listdir(shots)):
                 z.write(os.path.join(shots, f), os.path.join(base, 'screenshots', f))
-        z.write(src_zip, os.path.join(base, 'HOLLOW_MAN_II_SOURCE.zip'))
+        z.write(src_zip, os.path.join(base, 'HOLLOW_MAN_SOURCE.zip'))
     with zipfile.ZipFile(comp) as z:
         assert z.testzip() is None
         names = z.namelist()

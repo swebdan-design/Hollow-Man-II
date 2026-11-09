@@ -210,9 +210,9 @@ def img_title():
         for x in range(56, 104):
             if px[x, y] == C['brown'] and rnd.random() < 0.18:
                 px[x, y] = C['dbrown']
-    # big title "HOLLOW MAN II"
-    w = 13 * 12
-    big_text(im, 'HOLLOW MAN II', (160 - w) // 2 + 1, 12, 'cream', 'crim', 2)
+    # big title "HOLLOW MAN"
+    w = len('HOLLOW MAN') * 12
+    big_text(im, 'HOLLOW MAN', (160 - w) // 2 + 1, 12, 'cream', 'crim', 2)
     # leave rows 4-5 (y 32..47) dark for subtitle + credit text (font tiles)
     dr.rectangle([0, 32, 159, 47], fill=C['black'])
     dr.rectangle([0, 0, 159, 9], fill=C['black'])

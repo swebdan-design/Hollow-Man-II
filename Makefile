@@ -1,5 +1,5 @@
-# HOLLOW MAN II: THE SECOND SHADOW - by Synth Centric
-# Build: make            (ROM -> build/HOLLOW_MAN_II_THE_SECOND_SHADOW.gbc)
+# HOLLOW MAN: THE SECOND SHADOW - by Synth Centric
+# Build: make            (ROM -> build/HOLLOW_MAN_THE_SECOND_SHADOW.gbc)
 #        make test       (host-side tests + emulator smoke tests)
 #        make release    (release/ ROM, zips)
 # Requires GBDK-2020 (set GBDK_HOME) and Python 3 with Pillow.
@@ -11,12 +11,12 @@ PYTHON    ?= python3
 BUILD := build
 GEN   := $(BUILD)/gen
 OBJ   := $(BUILD)/obj
-ROMNAME := HOLLOW_MAN_II_THE_SECOND_SHADOW
+ROMNAME := HOLLOW_MAN_THE_SECOND_SHADOW
 ROM   := $(BUILD)/$(ROMNAME).gbc
 
 CFLAGS  := -Iinclude -I$(GEN) -Wf--opt-code-speed
 LDFLAGS := -Wm-yC -Wl-yt0x1B -Wl-ya1 -autobank -Wb-max=15 -Wm-yoA \
-           -Wm-yn"HOLLOWMAN2" -Wm-yk"SC" -Wm-yl0x33 -Wl-m -Wl-j
+           -Wm-yn"HOLLOWMAN" -Wm-yk"SC" -Wm-yl0x33 -Wl-m -Wl-j
 
 SRC      := $(wildcard src/*.c)
 ASSET_PY := $(wildcard tools/*.py assets/*/*.py)

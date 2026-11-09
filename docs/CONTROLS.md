@@ -1,4 +1,4 @@
-# HOLLOW MAN II — Controls
+# HOLLOW MAN — Controls
 
 | Input | Field | Menus |
 |---|---|---|

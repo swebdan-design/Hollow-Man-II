@@ -1,4 +1,4 @@
-# HOLLOW MAN II: THE SECOND SHADOW
+# HOLLOW MAN: THE SECOND SHADOW
 
 ### by Synth Centric
 
@@ -38,7 +38,7 @@ ghosts. She believes in fingerprints. She is going to find the end of this trail
 
 ## GETTING STARTED
 
-Insert the Game Pak (or load `HOLLOW_MAN_II_THE_SECOND_SHADOW.gbc` in a Game Boy Color
+Insert the Game Pak (or load `HOLLOW_MAN_THE_SECOND_SHADOW.gbc` in a Game Boy Color
 emulator) and switch the power ON. This game runs only on Game Boy Color hardware (or
 Game Boy Advance / compatible emulators running in Game Boy Color mode).
 
@@ -239,7 +239,7 @@ Use **CITY MAP** in the pause menu to see the districts you have discovered.
 
 ## CREDITS
 
-**HOLLOW MAN II: THE SECOND SHADOW**
+**HOLLOW MAN: THE SECOND SHADOW**
 Created by **Synth Centric**.
 Original soundtrack composed for the Game Boy Color sound hardware by **Synth Centric**.
 Built with GBDK-2020.

@@ -1,5 +1,5 @@
 """
-gfx.py - Graphics helpers for HOLLOW MAN II asset pipeline.
+gfx.py - Graphics helpers for HOLLOW MAN asset pipeline.
 
 All artwork in this project is authored as small indexed-colour pixel grids
 (ASCII art or procedurally drawn with the helpers below) and converted here to

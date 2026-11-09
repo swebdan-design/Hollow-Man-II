@@ -8,7 +8,7 @@ os.environ.setdefault('PYSDL2_DLL_PATH', '')
 from pyboy import PyBoy  # noqa
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ROM = os.path.join(ROOT, 'build', 'HOLLOW_MAN_II_THE_SECOND_SHADOW.gbc')
+ROM = os.path.join(ROOT, 'build', 'HOLLOW_MAN_THE_SECOND_SHADOW.gbc')
 
 
 class Emu:

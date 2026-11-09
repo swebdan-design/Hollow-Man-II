@@ -1,4 +1,4 @@
-/* HOLLOW MAN II: THE SECOND SHADOW - shared engine header
+/* HOLLOW MAN: THE SECOND SHADOW - shared engine header
  * by Synth Centric
  *
  * Memory/bank layout:

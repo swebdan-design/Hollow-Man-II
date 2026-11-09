@@ -16,7 +16,7 @@ F = c.FLAGS
 IT = c.ITEM_ID
 EV = c.EV_ID
 M = {m.name: i for i, m in enumerate(c.MAPS)}
-ROM = os.path.join(HERE, '..', 'build', 'HOLLOW_MAN_II_THE_SECOND_SHADOW.gbc')
+ROM = os.path.join(HERE, '..', 'build', 'HOLLOW_MAN_THE_SECOND_SHADOW.gbc')
 SHOTS = os.path.join(HERE, '..', 'build', 'shots')
 os.makedirs(SHOTS, exist_ok=True)
 

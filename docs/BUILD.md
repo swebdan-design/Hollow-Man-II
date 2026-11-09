@@ -1,4 +1,4 @@
-# Building HOLLOW MAN II: THE SECOND SHADOW
+# Building HOLLOW MAN: THE SECOND SHADOW
 
 The ROM is built entirely from the sources in this repository. All graphics, maps, scripts
 and music are stored as Python/ASCII source assets and converted at build time.
@@ -27,7 +27,7 @@ sh tools/setup_gbdk.sh
 
 # 3. Build
 make GBDK_HOME=toolchain/gbdk
-#    -> build/HOLLOW_MAN_II_THE_SECOND_SHADOW.gbc
+#    -> build/HOLLOW_MAN_THE_SECOND_SHADOW.gbc
 #    The build ends by validating the cartridge header ("HEADER OK").
 
 # 4. (optional) run the test suite
@@ -62,7 +62,7 @@ If GBDK-2020 is installed elsewhere, point `GBDK_HOME` at the folder that contai
 
 ## Reproducibility
 
-The source archive `release/HOLLOW_MAN_II_SOURCE.zip` contains everything needed. The release
+The source archive `release/HOLLOW_MAN_SOURCE.zip` contains everything needed. The release
 script rebuilds the ROM from a fresh extraction of that archive and checks that the result is
 byte-identical to the released ROM (see `docs/TESTING.md`).
 
