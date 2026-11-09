@@ -37,15 +37,9 @@ static void title_draw(void) {
 
 extern void oam_set(uint8_t i, int16_t x, int16_t y, uint16_t tile, uint8_t pal);
 static void smoke_tick(void) {
+    /* the painted title already carries fog and rain: park the four title OBJ slots off-screen */
     uint8_t i;
-    for (i = 0; i < 4; i++) {
-        if ((frame_ctr & 3) == i) {
-            smoke_y[i]--;
-            if ((frame_ctr & 15) == i) smoke_x[i] += (rand8() & 1) ? 1 : -1;
-        }
-        if (smoke_y[i] < 70) { smoke_y[i] = 150; smoke_x[i] = 20 + (rand8() % 200); }
-        oam_set(i, smoke_x[i], smoke_y[i], 96 + SPR_SMOKE * 4, 1);
-    }
+    for (i = 0; i < 4; i++) { oam_set(i, 0, 160, 0, 0); }   /* y=160: off-screen */
 }
 
 void title_run(void) {

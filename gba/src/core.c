@@ -75,22 +75,12 @@ void flash_red(uint8_t frames) {
     pal_apply();
 }
 
-/* map palette = tileset palettes tinted by the map's mood */
+/* map palettes are baked per map (lighting and mood are part of the picture) */
+extern const uint16_t *map_pals(void);
 void load_bg_palset(uint8_t id) {
-    const mood_t *m = &moods[id];
-    const tileset_t *ts = &tilesets[cur_tileset == 0xFF ? 0 : cur_tileset];
-    int i, n = ts->npals * 16;
-    for (i = 0; i < n; i++) {
-        uint16_t c = ts->pals[i * 2] | (ts->pals[i * 2 + 1] << 8);
-        int r = c & 31, g = (c >> 5) & 31, b = (c >> 10) & 31;
-        r = (r * m->bright) >> 8; g = (g * m->bright) >> 8; b = (b * m->bright) >> 8;
-        r += ((m->r - r) * (int)m->amt) >> 8;
-        g += ((m->g - g) * (int)m->amt) >> 8;
-        b += ((m->b - b) * (int)m->amt) >> 8;
-        if (r > 31) r = 31; if (g > 31) g = 31; if (b > 31) b = 31;
-        if (r < 0) r = 0; if (g < 0) g = 0; if (b < 0) b = 0;
-        bg_pal[i] = r | (g << 5) | (b << 10);
-    }
+    const uint16_t *p = map_pals();
+    (void)id;
+    if (p) memcpy(bg_pal, p, 13 * 32);
     bg_pal[0] = RGB15(1, 1, 2);
     memcpy(&bg_pal[14 * 16], ui_pal + 16, 32);   /* dim UI palette */
     memcpy(&bg_pal[15 * 16], ui_pal, 32);        /* UI palette */
@@ -132,10 +122,10 @@ void screen_init(void) {
     REG_BGCNT(2) = BG_PRIO(1) | BG_CBB(3) | BG_SBB(29);
     /* UI tiles in charblock 3 (below the screenblocks at 0xE000+) */
     memcpy(CHARBLOCK(3), ui_tiles, UI_TILE_COUNT * 32);
-    /* permanent sprite tiles: player 0..95, fx 96.., shadow figure 176..239 */
-    memcpy(CHARBLOCK(4), spr_player, 96 * 32);
-    memcpy(CHARBLOCK(4) + 96 * 16, spr_fx, SPR_FX_COUNT * 128);
-    memcpy(CHARBLOCK(4) + 176 * 16, spr_shadowbig, 64 * 32);
+    /* OBJ VRAM: 0..31 player frame (streamed), 32.. effects, 128..511 actor frames (streamed),
+     * 512..575 the Second Shadow figure */
+    memcpy(CHARBLOCK(4) + 32 * 16, spr_fx, SPR_FX_COUNT * 128);
+    memcpy(CHARBLOCK(4) + 512 * 16, spr_shadowbig, 64 * 32);
     load_obj_pals();
     memcpy(&bg_pal[15 * 16], ui_pal, 32);
     memcpy(&bg_pal[14 * 16], ui_pal + 16, 32);

@@ -5,6 +5,8 @@ import math
 import random
 from PIL import Image, ImageDraw, ImageFilter
 import gba_chars as chars
+import numpy as np
+import illus3d as I3
 
 W, H = 240, 160
 
@@ -16,6 +18,9 @@ def lerp(a, b, t):
 def hx(h):
     h = h.lstrip('#')
     return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+
+
+V3 = I3.V
 
 
 def gradient(im, top, bot, y0=0, y1=H):
@@ -155,25 +160,26 @@ def title():
     gradient(im, '07070b', '2a1e22', 0, 110)
     gradient(im, '2a1e22', '120e10', 110, H)
     glow(im, 120, 92, 90, '6a4a3a', .55)                    # fog lit from below
-    beast = shadow_beast(150, 150, '0d0a0f', 'e02828', '1c141c')
-    paste_rgba(im, beast, 45, 2)
-    glow(im, 110, 42, 7, 'ff4040', .5); glow(im, 130, 42, 7, 'ff4040', .5)
     skyline(im, 132, 7, '0b0a0e', ['8a6a2a', 'b8823a', '4a5a6a'], .07, 18, 52)
+    a = I3.to_arr(im)
+    I3.beast_at(a, I3.beast('title_beast', 170, 150, 165), 88, 30, 6, .8)
+    im = I3.to_img(a)
     fog(im, 96, 140, '8a7a6e', .55, 3)
-    # streetlamp at left, its cone of light
     d = ImageDraw.Draw(im)
-    d.rectangle([28, 50, 30, 136], fill=hx('15151a'))
+    d.rectangle([28, 50, 30, 136], fill=hx('15151a'))       # streetlamp
     d.rectangle([22, 46, 37, 50], fill=hx('1c1c22'))
-    glow(im, 29, 54, 46, 'f2c96b', .65)
     d.rectangle([24, 50, 35, 52], fill=hx('fff2c4'))
-    # Hollow Man x3, standing in the light (rim-lit so the balaclava reads against the dark)
-    fig = sprite_figure('hollow', 0, 3)
-    glow(im, 120, 112, 44, 'c8a080', .45)                   # backlight behind the figure
-    paste_key(im, fig, 96, 52)
-    rim_light(im, fig, 96, 52, 'f2d488', side=-1)
     d.rectangle([0, 136, W, H], fill=hx('0a0809'))
-    rain(im, 220, 5, '9aa0b0', .35)
-    return im
+    a = I3.to_arr(im)
+    I3.glow_add(a, 29, 54, 40, (0.95, 0.78, 0.42), .55)
+    I3.glow_add(a, 86, 100, 46, (0.75, 0.6, 0.48), .3)     # backlight behind the figure
+    fig = I3.figure('title_hollow', 'hollow', 90, 104, 96, key_dir=V3(-0.9, 0.55, 0.5),
+                    rim=V3(0.7, 0.3, -1.0), rim_col=V3(1.0, 0.85, 0.55))
+    I3.over(a, fig, 40, 40)
+    a = I3.light_shafts(a, 29, 54, 0.35)
+    im = I3.to_img(a)
+    rain(im, 220, 5, '9aa0b0', .3)
+    return I3.to_img(I3.finish(I3.to_arr(im), 1, warm=(1.04, 0.98, 0.92)))
 
 
 def gloam():
@@ -242,22 +248,25 @@ def photo():
 def shadow_close():
     im = Image.new('RGB', (W, H))
     gradient(im, '050406', '3a0a10', 0, H)
-    beast = shadow_beast(220, 230, '0a080c', 'ff3030', '24141c', seed=11)
-    paste_rgba(im, beast, 10, -20)
-    glow(im, 105, 42, 16, 'ff3030', .6); glow(im, 135, 42, 16, 'ff3030', .6)
-    rain(im, 160, 12, '603040', .4)
-    return im
+    a = I3.to_arr(im)
+    I3.glow_add(a, 120, 70, 100, (0.5, 0.08, 0.1), .5)
+    I3.beast_at(a, I3.beast('close_beast', 240, 190, 330, center_y=1.6), 0, -20, 9, .8)
+    im = I3.to_img(a)
+    rain(im, 160, 12, '603040', .35)
+    return I3.to_img(I3.finish(I3.to_arr(im), 3, warm=(1.06, 0.95, 0.95)))
 
 
 def hollow_close():
     im = Image.new('RGB', (W, H))
     gradient(im, '1a1416', '4a3a32', 0, H)
-    glow(im, 120, 40, 90, 'a08868', .55)
-    fig = sprite_figure('hollow', 0, 6).crop((0, 6 * 3, 96, 6 * 27))
-    paste_key(im, fig, 72, 16)
-    rim_light(im, fig, 72, 16, 'f2d488', side=-1)
-    rain(im, 120, 13, '9aa0b0', .3)
-    return im
+    a = I3.to_arr(im)
+    I3.glow_add(a, 120, 40, 110, (0.62, 0.52, 0.4), .55)
+    fig = I3.figure('close_hollow', 'hollow', 200, 170, 420, center_y=1.3, pitch=0.08, ambient=0.16,
+                    key_dir=V3(-1.0, 0.45, 0.45), rim=V3(0.9, 0.2, -0.8), key_col=V3(1.15, 0.95, 0.75))
+    I3.over(a, fig, 20, -4)
+    im = I3.to_img(a)
+    rain(im, 120, 13, '9aa0b0', .25)
+    return I3.to_img(I3.finish(I3.to_arr(im), 2))
 
 
 def ward():
@@ -289,22 +298,23 @@ def dawn():
     gradient(im, '2a2226', '0e0a0c', 108, H)
     d = ImageDraw.Draw(im)
     d.polygon([(96, H), (118, 108), (122, 108), (144, H)], fill=hx('3a3236'))
-    fig = sprite_figure('hollow', 3, 1)
-    paste_key(im, fig, 112, 96)
-    d.polygon([(118, 127), (110, H), (132, H), (122, 127)], fill=hx('0a0608'))
-    d.line([(111, 157), (106, 150)], fill=hx('0a0608'), width=2)
-    d.line([(131, 157), (136, 150)], fill=hx('0a0608'), width=2)
-    return im
+    d.polygon([(118, 134), (106, H), (134, H), (122, 134)], fill=hx('0a0608'))   # long shadow
+    a = I3.to_arr(im)
+    fig = I3.figure('dawn_hollow', 'hollow', 24, 44, 40, yaw=math.pi, pitch=0.2, phase=1,
+                    key_dir=V3(0.0, 0.6, -1.0), rim=V3(0.0, 0.4, -1.0), rim_col=V3(1.0, 0.8, 0.5))
+    I3.over(a, fig, 108, 96)
+    a = I3.light_shafts(a, 120, 100, 0.4)
+    return I3.to_img(I3.finish(I3.to_arr(I3.to_img(a)), 4, warm=(1.05, 1.0, 0.94)))
 
 
 def vessel():
     im = Image.new('RGB', (W, H))
     gradient(im, '050405', '5a0a10', 0, H)
-    beast = shadow_beast(150, 150, '060406', 'ff3030', '2a0a10', seed=21)
-    paste_rgba(im, beast, 45, 0)
-    glow(im, 110, 40, 10, 'ff4040', .6); glow(im, 130, 40, 10, 'ff4040', .6)
+    a = I3.to_arr(im)
+    I3.beast_at(a, I3.beast('title_beast', 170, 150, 165), 35, 0, 7, .8)
+    im = I3.to_img(a)
     skyline(im, H, 20, '050405', ['b8823a', 'd8b860'], .12, 20, 60)
-    return im
+    return I3.to_img(I3.finish(I3.to_arr(im), 5))
 
 
 def eighth():
@@ -328,6 +338,15 @@ def eighth():
     return im
 
 
-SCENES = [('title', title), ('gloam', gloam), ('house', house), ('photo', photo),
-          ('shadow', shadow_close), ('hollow', hollow_close), ('ward', ward), ('dawn', dawn),
-          ('vessel', vessel), ('eighth', eighth)]
+def _finished(fn, seed, **kw):
+    """procedural (non-3D) scenes: soften the drawn shapes, then the same filmic finish"""
+    def go():
+        a = I3.to_arr(fn())
+        a = I3.blur(a, 1) * 0.55 + a * 0.45
+        return I3.to_img(I3.finish(a, seed, **kw))
+    return go
+
+
+SCENES = [('title', title), ('gloam', _finished(gloam, 11)), ('house', _finished(house, 12, warm=(1.05, 0.98, 0.9))),
+          ('photo', _finished(photo, 13, vignette=0.6)), ('shadow', shadow_close), ('hollow', hollow_close),
+          ('ward', _finished(ward, 14)), ('dawn', dawn), ('vessel', vessel), ('eighth', _finished(eighth, 15))]

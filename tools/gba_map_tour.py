@@ -13,6 +13,7 @@ for m in c.MAPS:
     for wp in m.warps:
         arrive.setdefault(wp[2], (wp[3], wp[4]))
 arrive.setdefault('strip', (4, 5))
+arrive['ward_basement'] = (5, 8)   # (1, 1) is the stairs tile: skipping the entry text there walks back up
 fl = [c.FLAGS[f] for f in ('ch1_done', 'ch2_done', 'ch3_done', 'dacre_fled', 'theatre_done', 'eddie_seen', 'ward_seen',
                            'pf_seen', 'ps_seen', 'dock_seen', 'frz_seen', 'd1_seen', 'd2_seen', 'cel_seen', 'base_seen',
                            'ch2_started', 'ch3_started', 'ch4_started', 'ch5_started', 'ch6_started', 'bell6')]

@@ -6,7 +6,7 @@ shared story, world and soundtrack:
 
 | Version | ROM | Engine |
 |---|---|---|
-| **Game Boy Advance** (overhauled graphics) | `release/HOLLOW_MAN_THE_SECOND_SHADOW.gba` | C, arm-none-eabi-gcc, own runtime (`gba/`) |
+| **Game Boy Advance** (pre-rendered 3D-lit graphics) | `release/HOLLOW_MAN_THE_SECOND_SHADOW.gba` | C, arm-none-eabi-gcc, own runtime (`gba/`) |
 | **Game Boy Color** | `release/HOLLOW_MAN_THE_SECOND_SHADOW.gbc` | C, GBDK-2020 (`src/`) |
 
 - **Manual:** [docs/MANUAL.md](docs/MANUAL.md) · **Controls:** [docs/CONTROLS.md](docs/CONTROLS.md)

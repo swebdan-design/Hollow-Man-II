@@ -127,3 +127,7 @@ Also: `tools/gba_map_tour.py` boots all 39 maps on the GBA build (all load and r
   first playthrough (39 maps, 7 chapters, optional secrets), short of the 4–6 hour aspiration.
 - Sprite flicker/drop with more than 10 sprites on one scanline is possible in busy rooms
   (hardware limit; no sprite multiplexing is implemented).
+- **GBA pre-rendered graphics (1.2)** were checked in mGBA only: the 15 release screenshots,
+  the 39-map tour contact sheet and the full test suite. Each VBlank, every changed 1 KB character frame is
+  DMA'd into VRAM, at most 13 KB. By cycle count that fits easily in VBlank, but it has not
+  been timed on real hardware.

@@ -1,5 +1,5 @@
 # HOLLOW MAN: THE SECOND SHADOW
-### by Synth Centric — Release 1.1 (Game Boy Advance + Game Boy Color)
+### by Synth Centric — Release 1.2 (Game Boy Advance + Game Boy Color)
 
 A top-down survival-horror detective adventure. A masked man in a brown tweed suit hunts the
 seven men behind the Mercy Street killings — while something with horns walks in his shadow.
@@ -11,6 +11,23 @@ A standalone game (not a sequel).
 - `HOLLOW_MAN_SOURCE.zip` — complete source; rebuilds both ROMs byte-for-byte (docs/BUILD.md)
 - `HOLLOW_MAN_COMPLETE.zip` — both ROMs, manual, docs, release notes, screenshots, source zip
 - `screenshots_gba/`, `screenshots/` — genuine emulator captures (mGBA / PyBoy)
+
+## What's new in 1.2 — pre-rendered graphics (GBA)
+The GBA version moves away from pixel art to pre-rendered, lit graphics:
+- **3D-rendered characters.** Every character is a 3D model (signed-distance-field raymarcher,
+  `tools/render3d.py`) with key, fill and rim lights, ambient occlusion and cloth materials:
+  herringbone tweed, a knitted balaclava. Each is rendered supersampled into smooth 32×64
+  frames, with a 4-frame walk cycle in three directions. Frames stream into VRAM each VBlank.
+- **Baked, lit environments.** Each of the 39 maps is rendered as one full-colour image
+  (`tools/render_env.py`). The bake adds soft cast shadows from a height field, ambient
+  occlusion, coloured point lights from lamps, windows and neon, bloom, wet-street
+  reflections, fog and a per-district colour grade. It is then quantised into 13 palettes of
+  15 colours and up to 1000 unique tiles. Doors, switches and crates that change in-game have
+  pre-lit replacement pieces.
+- **Rendered illustrations.** The title and cutscenes show the 3D Hollow Man and a 3D horned
+  Second Shadow with glowing eyes, light shafts, bloom, film grain and dithered 224-colour
+  output. The title lettering is anti-aliased type.
+- **Smooth UI font.** Anti-aliased (DejaVu Sans Bold), replacing the blocky 8×8 font.
 
 ## What's new in 1.1
 - Renamed to **HOLLOW MAN: THE SECOND SHADOW**.

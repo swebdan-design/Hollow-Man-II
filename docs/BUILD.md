@@ -15,6 +15,7 @@ and music are stored as Python/ASCII source assets and converted at build time.
 | GBDK-2020 | 4.3.0 (`lcc` 2024/06/08, SDCC 4.4.1 #14650) |
 | Python | 3.13 (3.9+ should work) |
 | Pillow | 12.3.0 (asset conversion) |
+| numpy | 2.5.3 (GBA pre-rendering) |
 | GNU Make | 4.x |
 | PyBoy | 2.9.0 (tests and screenshots only, optional) |
 | pytest | 9.x (tests only, optional) |
@@ -65,7 +66,20 @@ The GBA build needs no devkitPro: `gba/runtime/crt0.s` (startup + IRQ handler) a
 `gba/runtime/gba.ld` (linker script) are part of the project, and `tools/gbafix.py` writes a
 valid cartridge header (boot logo, complement check). `tools/build_gba_assets.py` generates all
 GBA data into `build/gba/gen/`, re-using the shared map/script/music compilers with text
-re-wrapped for the GBA's wider dialogue box. The ROM declares 32 KB battery SRAM (`SRAM_V113`).
+re-wrapped for the GBA's wider dialogue box.
+
+GBA graphics are pre-rendered at build time with numpy:
+- `tools/render3d.py` is a small SDF raymarcher.
+- `assets/gba/chars3d.py` holds the character models and `assets/gba/illus3d.py` the
+  illustration figures and finishing.
+- `tools/render_env.py` lights and quantises each map.
+
+A clean build takes about 10 minutes, almost all of it rendering. Renders are cached in
+`build/gba/cache3d/`, keyed on a hash of the sources, so rebuilds take about a minute. The
+UI and title type use the DejaVu fonts in `assets/fonts/` (free licence, `LICENSE-DejaVu.txt`).
+Requires numpy (tested with 2.x).
+
+The ROM declares 32 KB battery SRAM (`SRAM_V113`).
 
 ## What the build does (GBC)
 

@@ -23,12 +23,16 @@
 
 /* ------------------------------------------------------------ far data */
 typedef struct { uint8_t bank; const uint8_t *ptr; } far_t;
-typedef struct { const uint8_t *tiles; const uint8_t *pal; uint8_t big; } sheet_t;
+typedef struct { const uint8_t *frames; const uint8_t *pal; uint8_t big; } sheet_t;  /* 32x64 frames, 1 KB each */
 typedef struct { const uint8_t *tiles; uint16_t ntiles; const uint8_t *pals; uint8_t npals;
                  const uint16_t *mt; const uint8_t *flags; uint8_t nmt; uint8_t wall_mt, top_mt; } tileset_t;
 typedef struct { uint8_t r, g, b; uint16_t amt, bright; } mood_t;
 typedef struct { const uint8_t *px; const uint16_t *pal; } image_t;
-typedef struct { const int8_t *data; uint32_t len; uint32_t loop; } stream_t;  /* recorded track */
+typedef struct { const int8_t *data; uint32_t len; uint32_t loop; } stream_t;
+/* pre-rendered map: own tiles, 13 palettes, base layout and lit "dynamic" pieces
+ * (dyn: 6 u16 each = x | y << 8 (0xFFFF = any position), metatile, 4 screen entries) */
+typedef struct { const uint8_t *tiles; uint16_t ntiles; const uint16_t *pals; const uint16_t *map;
+                 const uint16_t *dyn; uint8_t ndyn; } mapgfx_t;  /* recorded track */
 #include "gba_data.h"
 
 void far_read(uint8_t bank, const void *src, void *dst, uint16_t len);

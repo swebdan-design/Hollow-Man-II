@@ -12,7 +12,7 @@ for p in (HERE, os.path.join(ROOT, 'assets', 'gba'), os.path.join(ROOT, 'assets'
           os.path.join(ROOT, 'assets', 'sprites'), os.path.join(ROOT, 'assets', 'music')):
     sys.path.insert(0, p)
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import gba_art
 from gba_art import Canvas, hx, rgb15, tile4, convert_metatiles, pal_bytes, nearest
 import build_tiles          # GBC legends (metatile order / flags shared with the maps)
@@ -67,18 +67,33 @@ def c_u16(name, vals):
 UI_PAL = ['000000', 'efe6cf', '17121a', '241a1c', 'b8a07a', '6a5440', 'd23a3a', '6a1418',
           'e0b050', '7a7480', 'c02a2a', '4a4a58', 'f6efdc', '8a1a1e', '3a3040', '9aa6b0']
 DIM_PAL = ['000000', '6a6470', '17121a', '241a1c', 'b8a07a', '6a5440', 'd23a3a', '6a1418',
-           'e0b050', '7a7480', 'c02a2a', '4a4a58', '8a8490', '8a1a1e', '3a3040', '9aa6b0']
+           'e0b050', '453f4a', 'c02a2a', '4a4a58', '8a8490', '8a1a1e', '3a3040', '9aa6b0']
+
+
+FONT_TTF = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets', 'fonts', 'DejaVuSans-Bold.ttf')
+_ttf = []
 
 
 def glyph_tile(ch):
-    rows = font.glyph_rows(ch)
+    """anti-aliased 8x8 glyph from DejaVu Sans Bold: 1 = ink, 9 = edge (half-tone), 2 = drop shadow"""
+    from PIL import ImageFont
+    if not _ttf:
+        _ttf.append(ImageFont.truetype(FONT_TTF, 8))
+    f = _ttf[0]
+    g = Image.new('L', (8, 8), 0)
+    d = ImageDraw.Draw(g)
+    d.text(((8 - d.textlength(ch, font=f)) / 2, -2), ch, font=f, fill=255)
+    a = list(g.tobytes())
+    lv = [2 if v > 158 else 1 if v > 64 else 0 for v in a]
     px = [0] * 64
-    on = [[rows[y][x] == '#' for x in range(8)] for y in range(8)]
     for y in range(8):
         for x in range(8):
-            if on[y][x]:
+            v = lv[y * 8 + x]
+            if v == 2:
                 px[y * 8 + x] = 1
-            elif (x > 0 and y > 0 and on[y - 1][x - 1]) or (x > 0 and on[y][x - 1]) or (y > 0 and on[y - 1][x]):
+            elif v == 1:
+                px[y * 8 + x] = 9
+            elif x > 0 and y > 0 and lv[(y - 1) * 8 + x - 1]:
                 px[y * 8 + x] = 2      # drop shadow so text reads on any background
     return tile4(px)
 
@@ -257,21 +272,39 @@ def bmp_text(im, x, y, text, col, scale=1, shadow=None):
     return cx - x
 
 
+def ttf_text(im, cx, y, text, path, size, col, shadow, glow=None, spacing=0):
+    """anti-aliased centred text with a soft shadow (and optional glow) drawn into an RGB image"""
+    f = ImageFont.truetype(os.path.join(os.path.dirname(FONT_TTF), path), size)
+    d0 = ImageDraw.Draw(im)
+    w = sum(d0.textlength(ch, font=f) + spacing for ch in text) - spacing
+    mask = Image.new('L', im.size, 0)
+    dm = ImageDraw.Draw(mask)
+    x = cx - w / 2
+    for ch in text:
+        dm.text((x, y), ch, font=f, fill=255)
+        x += dm.textlength(ch, font=f) + spacing
+    from PIL import ImageFilter, ImageChops
+    if glow:
+        g = mask.filter(ImageFilter.GaussianBlur(5)).point(lambda v: min(255, v * 2))
+        im.paste(Image.new('RGB', im.size, glow), (0, 0), g)
+    sh = ImageChops.offset(mask, 1, 2).filter(ImageFilter.GaussianBlur(1))
+    im.paste(Image.new('RGB', im.size, shadow), (0, 0), sh)
+    im.paste(Image.new('RGB', im.size, col), (0, 0), mask)
+
+
 def title_with_text(im):
-    w = 10 * 18
-    gba_illus.glow(im, 120, 20, 70, '3a1418', .5)
-    bmp_text(im, (240 - w) // 2 + 2, 8, 'HOLLOW MAN', 'efe6cf', 3, shadow='8a1a1e')
-    s = 'THE SECOND SHADOW'
-    bmp_text(im, (240 - len(s) * 6 * 1) // 2, 34, s, 'd8c8a8', 1, shadow='1a1012')
-    s = 'by Synth Centric'
-    bmp_text(im, (240 - len(s) * 6) // 2, 45, s, 'e0b050', 1, shadow='1a1012')
+    ttf_text(im, 120, 2, 'HOLLOW MAN', 'DejaVuSerif-Bold.ttf', 26, (239, 230, 207), (40, 6, 8),
+             glow=(110, 20, 24), spacing=1)
+    ttf_text(im, 120, 33, 'THE SECOND SHADOW', 'DejaVuSans-Bold.ttf', 9, (216, 200, 168), (20, 14, 16), spacing=2)
+    ttf_text(im, 120, 45, 'by Synth Centric', 'DejaVuSans-Bold.ttf', 9, (224, 176, 80), (20, 14, 16))
     return im
 
 
 def convert_illus(im):
     """224-colour quantised image -> 8bpp tiles (30x20, row-major tile order) + 256-entry palette
     (224..239 = dimmed UI palette, 240..255 = UI palette so text/boxes work on top)"""
-    q = im.quantize(colors=224, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+    q0 = im.quantize(colors=224, method=Image.Quantize.MEDIANCUT, kmeans=2)
+    q = im.quantize(palette=q0, dither=Image.Dither.FLOYDSTEINBERG)     # dithered: no gradient banding
     pal = q.getpalette()[:224 * 3]
     pal += [0] * (224 * 3 - len(pal))
     cols = [(pal[i * 3], pal[i * 3 + 1], pal[i * 3 + 2]) for i in range(224)]
@@ -288,6 +321,117 @@ def convert_illus(im):
     for h in DIM_PAL + UI_PAL:
         pb.append(rgb15(hx(h)))
     return bytes(pixels), pb
+
+
+# ------------------------------------------------------------------ pre-rendered maps
+def _settiles(ops, out):
+    for o in ops:
+        if o.kind == 'SETTILE':
+            out.append(o.args)
+        elif o.kind == 'IF':
+            _settiles(o.args[1], out); _settiles(o.args[2], out)
+        elif o.kind == 'CHOICE':
+            _settiles(o.args[2], out); _settiles(o.args[3], out)
+
+
+def bake_maps(code, hdr, preview_dir):
+    import numpy as np
+    import render_env as RE
+    from gba_art import TileStore
+    lines = []
+    for mi, m in enumerate(content.MAPS):
+        mod = importlib.import_module('gba_' + m.ts)
+        leg = build_tiles.legend(m.ts)
+        top = mod.wall_top().im if hasattr(mod, 'wall_top') and m.ts != 'city' else None
+        cache = {}
+
+        def img_of(ch):
+            if ch not in cache:
+                cache[ch] = mod.T[ch]().im
+            return cache[ch]
+
+        def render(rows):
+            imgs = {ch: img_of(ch) for ch in set(''.join(rows))}
+            alb, hgt, emis, lights = RE.compose(rows, m.ts, imgs, m.w, m.h, top)
+            wet = np.zeros(hgt.shape)
+            for ty, r in enumerate(rows):
+                for tx, ch in enumerate(r):
+                    if ch in RE.WET:
+                        wet[ty * 16:ty * 16 + 16, tx * 16:tx * 16 + 16] = 1
+            return RE.light_image(alb, hgt, emis, lights, m.pal, m.flags & 1, m.flags & 4, wet)
+
+        base = render(m.rows)
+        dyn = {}
+        for (x, y, ch, cond) in m.patches:
+            dyn.setdefault((x, y), []).append(ch)
+        sts = []
+        for (nm, ops, mp) in content.SCRIPTS:
+            if mp == m.name:
+                _settiles(ops, sts)
+        for (x, y, ch) in sts:
+            dyn.setdefault((x, y), []).append(ch)
+        alt_rows = [list(r) for r in m.rows]
+        for (x, y), chs in dyn.items():
+            alt_rows[y][x] = chs[-1]
+        alt = render([''.join(r) for r in alt_rows]) if dyn else base
+        # generic (position-independent) pieces: pushable crates and the floor they leave behind
+        generic = set()
+        for (x, y), chs in dyn.items():
+            generic.update(chs[:-1])
+        if 'x' in ''.join(m.rows):
+            generic.update(['x', '.'])
+        pieces = []
+        for (x, y), chs in sorted(dyn.items()):
+            pieces.append(((x, y), chs[-1], alt[y * 16:y * 16 + 16, x * 16:x * 16 + 16]))
+        floor = '.' if '.' in leg else list(leg)[0]
+        for ch in sorted(generic):
+            g = render_small(RE, m, mod, top, ch, floor, img_of)
+            pieces.append(((0xFF, 0xFF), ch, g))
+        W, H = m.w * 16, m.h * 16
+        extra_rows = (len(pieces) + (m.w - 1)) // m.w
+        pool = np.zeros((H + extra_rows * 16, W, 3))
+        pool[:H] = base
+        for k, (pos, ch, im) in enumerate(pieces):
+            px, py = (k % m.w) * 16, H + (k // m.w) * 16
+            pool[py:py + 16, px:px + 16] = im
+        store, pals, entries, P, idx, best = RE.quantize_tiles(pool)
+        idx, best = RE.merge_tiles(idx, best, P, 1000)
+        store = TileStore(limit=4096)
+        ent = []
+        for ci in range(len(best)):
+            t, hf, vf = store.add(tuple(int(v) for v in idx[ci]))
+            ent.append((t + 1) | (hf << 10) | (vf << 11) | (int(best[ci]) << 12))
+        assert len(store.tiles) <= 1023, (m.name, len(store.tiles))
+        cw = m.w * 2
+        base_ent = ent[:(H // 8) * cw]
+        dyn_vals = []
+        for k, (pos, ch, im) in enumerate(pieces):
+            cx, cy = (k % m.w) * 2, (H // 8) + (k // m.w) * 2
+            e4 = [ent[(cy + dy) * cw + cx + dx] for dy in (0, 1) for dx in (0, 1)]
+            dyn_vals += [pos[0] | (pos[1] << 8), leg[ch][0]] + e4
+        code.append(c_array('mapgfx%d_tiles' % mi, store.data()))
+        palb = []
+        for pal in pals:
+            palb += [0] + [rgb15(tuple(c)) for c in pal]
+        palb += [0] * (13 * 16 - len(palb))
+        code.append(c_u16('mapgfx%d_pals' % mi, palb))
+        code.append(c_u16('mapgfx%d_map' % mi, base_ent))
+        code.append(c_u16('mapgfx%d_dyn' % mi, dyn_vals or [0]))
+        lines.append('  { mapgfx%d_tiles, %d, mapgfx%d_pals, mapgfx%d_map, mapgfx%d_dyn, %d },' % (
+            mi, len(store.tiles), mi, mi, mi, len(pieces)))
+        Image.fromarray(RE.reconstruct(P, idx, best, W, H + extra_rows * 16)[:H]).save(
+            os.path.join(preview_dir, 'map_%02d_%s.png' % (mi, m.name)))
+        print('baked %-14s %4d tiles  %2d dynamic pieces' % (m.name, len(store.tiles), len(pieces)))
+    code.append('const mapgfx_t mapgfx[%d] = {\n%s\n};' % (len(lines), '\n'.join(lines)))
+
+
+def render_small(RE, m, mod, top, ch, floor, img_of):
+    import numpy as np
+    rows = [floor * 3, floor + ch + floor, floor * 3]
+    imgs = {c: img_of(c) for c in set(''.join(rows))}
+    alb, hgt, emis, lights = RE.compose(rows, m.ts, imgs, 3, 3, None)
+    img = RE.light_image(alb, hgt, emis, lights, m.pal, m.flags & 1, False, np.zeros(hgt.shape))
+    return img[16:32, 16:32]
 
 
 # ------------------------------------------------------------------ main
@@ -345,45 +489,81 @@ def main(outdir, preview_dir):
         hdr.append('#define PS_%s %d' % (n.upper(), i))
     code.append('const mood_t moods[%d] = {\n%s\n};' % (len(moods), '\n'.join(moods)))
 
-    # sprites: player (12 frames 16x32), NPC sheets (9 frames), big sheets (3 frames 32x64)
-    pf = gba_chars.frames('hollow')
-    d, pal = obj_convert([f.im for f in pf], 16, 32)
+    # sprites: pre-rendered 3D characters, 32x64 frames (cached between builds)
+    import hashlib
+    import numpy as np
+    import chars3d
+    src_hash = hashlib.sha1((open(os.path.join(HERE, 'render3d.py')).read() +
+                             open(os.path.join(ROOT, 'assets', 'gba', 'chars3d.py')).read()).encode()).hexdigest()[:12]
+    cache_dir = os.path.join(os.path.dirname(outdir.rstrip('/')), 'cache3d')
+    os.makedirs(cache_dir, exist_ok=True)
+
+    def char_frames(n, big=1.0):
+        cp = os.path.join(cache_dir, '%s_%s_%s.npy' % (n, big, src_hash))
+        if os.path.exists(cp):
+            return list(np.load(cp))
+        fr = chars3d.frames(n, big)
+        np.save(cp, np.array(fr))
+        return fr
+
+    def frames_to_obj(fr):
+        """RGBA float frames -> one shared 15-colour palette + 4bpp 32x64 tiles (1D order)"""
+        opaque = []
+        for f in fr:
+            m = f[..., 3] >= 0.5
+            opaque.append((f[..., :3][m] * 255).astype(np.uint8))
+        allpx = np.concatenate(opaque)
+        im = Image.fromarray(allpx.reshape(1, -1, 3))
+        q = im.quantize(colors=15, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+        pl = q.getpalette()[:45]
+        pal = [tuple(pl[k * 3:k * 3 + 3]) for k in range(15)]
+        parr = np.array(pal, dtype=np.float64)
+        data = bytearray()
+        prev = Image.new('RGB', (len(fr) * 34, 64), (70, 66, 62))
+        for fi, f in enumerate(fr):
+            rgb = f[..., :3] * 255
+            d = ((rgb[..., None, :] - parr[None, None]) ** 2).sum(-1)
+            idx = d.argmin(-1) + 1
+            idx[f[..., 3] < 0.5] = 0
+            for ty in range(8):
+                for tx in range(4):
+                    data += tile4(list(idx[ty * 8:ty * 8 + 8, tx * 8:tx * 8 + 8].reshape(-1)))
+            vis = Image.fromarray(np.where((idx > 0)[..., None], parr[np.maximum(idx - 1, 0)], (70, 66, 62)).astype(np.uint8))
+            prev.paste(vis, (fi * 34, 0))
+        return bytes(data), pal, prev
+
+    pf = char_frames('hollow')
+    d, pal, pv = frames_to_obj(pf)
     code.append(c_array('spr_player', d))
     code.append(c_array('pal_player', obj_pal_bytes(pal)))
-    prev = Image.new('RGB', (12 * 18, 34 * 22), (60, 60, 70))
-    for i, f in enumerate(pf):
-        prev.paste(f.im, (i * 18, 0))
+    previews = [pv]
     sheet_lines = []
     sheet_ids = {}
-    for si, n in enumerate(gba_chars.ORDER):
-        fr = gba_chars.frames(n)[:9]
-        d, pal = obj_convert([f.im for f in fr], 16, 32)
+    for si, n in enumerate(chars3d.ORDER):
+        d, pal, pv = frames_to_obj(char_frames(n)[:12])
+        previews.append(pv)
         code.append(c_array('sheet_%s' % n, d))
         code.append(c_array('sheetpal_%s' % n, obj_pal_bytes(pal)))
         sheet_lines.append('  { sheet_%s, sheetpal_%s, 0 },' % (n, n))
         sheet_ids[n] = si
         hdr.append('#define SHEET_%s %d' % (n.upper(), si))
-        for i, f in enumerate(fr):
-            prev.paste(f.im, (i * 18, 34 * (si + 1)))
-    prev.resize((prev.size[0] * 2, prev.size[1] * 2), Image.NEAREST).save(os.path.join(preview_dir, 'gba_sprites.png'))
-    # big sheets: hector x2 (32x64), shadowman
-    big = {}
-    hf = gba_chars.frames('hector')
-    bimgs = [hf[k].im.resize((32, 64), Image.NEAREST) for k in (0, 3, 6)]
-    d, pal = obj_convert(bimgs, 32, 64)
+    d, pal, pv = frames_to_obj(char_frames('hector', 1.3)[:12])
+    previews.append(pv)
     code.append(c_array('sheet_big_hector', d)); code.append(c_array('sheetpal_big_hector', obj_pal_bytes(pal)))
     sheet_lines.append('  { sheet_big_hector, sheetpal_big_hector, 1 },')
-    hdr.append('#define SHEET_BIG_HECTOR %d' % len(gba_chars.ORDER))
-    sheet_ids['big_hector'] = len(gba_chars.ORDER)
-    sf = shadow_figure_64()
-    simgs = [sf.crop((16, 0, 48, 64))] * 3
-    d, pal = obj_convert(simgs, 32, 64)
-    code.append(c_array('sheet_big_shadowman', d)); code.append(c_array('sheetpal_big_shadowman', obj_pal_bytes(pal)))
-    sheet_lines.append('  { sheet_big_shadowman, sheetpal_big_shadowman, 1 },')
-    hdr.append('#define SHEET_BIG_SHADOWMAN %d' % (len(gba_chars.ORDER) + 1))
-    sheet_ids['big_shadowman'] = len(gba_chars.ORDER) + 1
+    hdr.append('#define SHEET_BIG_HECTOR %d' % len(chars3d.ORDER))
+    sheet_ids['big_hector'] = len(chars3d.ORDER)
+    sheet_lines.append('  { sheet_wraith, sheetpal_wraith, 0 },')
+    hdr.append('#define SHEET_BIG_SHADOWMAN %d' % (len(chars3d.ORDER) + 1))
+    sheet_ids['big_shadowman'] = len(chars3d.ORDER) + 1
     code.append('const sheet_t sheet_dir[%d] = {\n%s\n};' % (len(sheet_lines), '\n'.join(sheet_lines)))
     hdr.append('#define NUM_SHEETS %d' % len(sheet_lines))
+    pw = max(p.size[0] for p in previews)
+    sheet_img = Image.new('RGB', (pw, 66 * len(previews)))
+    for k, p in enumerate(previews):
+        sheet_img.paste(p, (0, k * 66))
+    sheet_img.save(os.path.join(preview_dir, 'gba_sprites3d.png'))
+    sf = shadow_figure_64()
 
     # fx
     fxs = fx_images()
@@ -452,6 +632,7 @@ def main(outdir, preview_dir):
     content.IMAGES.update(img_ids)
     import world  # noqa
     rep = content.build(pk, hdr, dirs_c, legends, palsets, music_ids, sheet_ids, img_ids, build_tiles.TILESET_ID)
+    bake_maps(code, hdr, preview_dir)
     for name, kind, payload in pk.items:
         if kind == 'blob':
             code.append(c_array(name, payload))

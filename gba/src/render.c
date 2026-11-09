@@ -1,5 +1,6 @@
 /* render.c (GBA) - camera and OAM composition (shadow OAM flushed in VBlank) */
 #include "hm.h"
+#include "gba_dirs.h"
 
 int16_t cam_x, cam_y;
 uint8_t shake_t;
@@ -17,9 +18,21 @@ static uint8_t trail_i;
 
 #define SHAPE_SQ 0
 #define SHAPE_TALL 2
-#define FX_TILE(i) (96 + (i) * 4)
+#define FX_TILE(i) (32 + (i) * 4)
 
-void oam_flush(void) { dma3_copy32(MEM_OAM, oam, 256); }
+/* streamed character frames: VRAM slot k (0 = player) receives the current 1 KB frame */
+static const uint8_t *slot_src[13];
+static const uint8_t *up_src[13];
+static uint8_t up_k[13], n_up;
+extern const uint8_t spr_player[];
+
+void oam_flush(void) {
+    uint8_t i;
+    for (i = 0; i < n_up; i++)
+        dma3_copy32(CHARBLOCK(4) + (up_k[i] ? 128 + (up_k[i] - 1) * 32 : 0) * 16, up_src[i], 256);
+    n_up = 0;
+    dma3_copy32(MEM_OAM, oam, 256);
+}
 
 void hide_all_sprites(void) {
     int i;
@@ -54,9 +67,15 @@ static void spr(int16_t x, int16_t y, uint8_t shape, uint8_t size, uint16_t tile
     oam_n++;
 }
 
-/* character: 16x32 sprite whose lower 16x16 is the actor's body box */
-static void draw_char(int16_t wx, int16_t wy, uint16_t tile, uint8_t pal, uint8_t flip) {
-    spr(wx - cam_x, wy - cam_y - 16, SHAPE_TALL, 2, tile, pal, flip ? 0x1000 : 0);
+/* character: pre-rendered 32x64 frame, feet on the actor's 16x16 body box */
+static uint8_t char_k;
+static void draw_char_frames(int16_t wx, int16_t wy, const uint8_t *frames, uint8_t frame, uint8_t pal,
+                             uint8_t flip, int16_t yoff) {
+    uint8_t k = char_k++;
+    const uint8_t *src = frames + (uint32_t)frame * 1024;
+    if (k > 12) return;
+    if (slot_src[k] != src && n_up < 13) { slot_src[k] = src; up_src[n_up] = src; up_k[n_up++] = k; }
+    spr(wx - cam_x - 8, wy - cam_y - 44 + yoff, SHAPE_TALL, 3, k ? 128 + (k - 1) * 32 : 0, pal, flip ? 0x1000 : 0);
 }
 
 static void draw_fx(int16_t wx, int16_t wy, uint8_t idx, uint16_t flip) {
@@ -64,12 +83,12 @@ static void draw_fx(int16_t wx, int16_t wy, uint8_t idx, uint16_t flip) {
 }
 
 static uint8_t walk_frame(uint8_t dir, uint8_t anim, uint8_t *flip) {
-    uint8_t ph = (anim >> 3) & 3, step = ph == 1 ? 1 : (ph == 3 ? 2 : 0);
+    uint8_t ph = (anim >> 3) & 3;
     *flip = 0;
-    if (dir == DIR_DOWN) return step;
-    if (dir == DIR_UP) return 3 + step;
+    if (dir == DIR_DOWN) return ph;
+    if (dir == DIR_UP) return 4 + ph;
     *flip = dir == DIR_LEFT;
-    return 6 + step;
+    return 8 + ph;
 }
 
 static void draw_shadow_follower(int16_t px, int16_t py) {
@@ -93,6 +112,7 @@ void render_sprites(void) {
     uint8_t i, f, flip;
     int16_t px = pl_x >> 4, py = pl_y >> 4;
     oam_n = 0;
+    char_k = 1;
     if (!image_mode) {
         for (i = 0; i < MAX_ACTORS; i++) {
             actor_t *a = &actors[i];
@@ -102,14 +122,14 @@ void render_sprites(void) {
             }
         }
     }
-    if (big_shadow_on) spr(big_shadow_x + 40, big_shadow_y, SHAPE_SQ, 3, 176, 2, 0);
+    if (big_shadow_on) spr(big_shadow_x + 40, big_shadow_y, SHAPE_SQ, 3, 512, 2, 0);
     if (image_mode) goto done;
 
     if (shadow_mode != 0xFE && !(pl_hurt & 2)) {
         if (pl_atk) {
             uint8_t wt = gs.weapon ? SPR_AXE_V : SPR_PIPE_V;
             uint8_t wh = gs.weapon ? SPR_AXE_H : SPR_PIPE_H;
-            f = pl_dir == DIR_DOWN ? 9 : (pl_dir == DIR_UP ? 10 : 11);
+            f = pl_dir == DIR_DOWN ? 12 : (pl_dir == DIR_UP ? 13 : 14);
             if (pl_atk > 2) {
                 switch (pl_dir) {
                 case DIR_DOWN: draw_fx(px - 2, py + 10, wt, 0x2000); break;
@@ -118,10 +138,10 @@ void render_sprites(void) {
                 default: draw_fx(px + 13, py - 2, wh, 0); break;
                 }
             }
-            draw_char(px, py, f * 8, 0, pl_dir == DIR_LEFT);
+            { uint8_t k0 = char_k; char_k = 0; draw_char_frames(px, py, spr_player, f, 0, pl_dir == DIR_LEFT, 0); char_k = k0; }
         } else {
             f = walk_frame(pl_dir, pl_anim, &flip);
-            draw_char(px, py, f * 8, 0, flip);
+            { uint8_t k0 = char_k; char_k = 0; draw_char_frames(px, py, spr_player, f, 0, flip, 0); char_k = k0; }
         }
     }
 
@@ -133,12 +153,10 @@ void render_sprites(void) {
         ax = a->x >> 4; ay = a->y >> 4;
         if (a->size == 1 || a->size == 3) {
             draw_fx(ax + (a->size == 1 ? -4 : 0), ay, (uint8_t)a->tile, a->dir == DIR_LEFT ? 0x1000 : 0);
-        } else if (a->size == 2) {
-            f = a->dir == DIR_DOWN ? 0 : (a->dir == DIR_UP ? 1 : 2);
-            spr(ax - cam_x, ay - cam_y - 32, SHAPE_TALL, 3, a->tile + f * 32, a->attr, a->dir == DIR_LEFT ? 0x1000 : 0);
         } else {
             f = walk_frame(a->dir, a->anim, &flip);
-            draw_char(ax, ay, a->tile + f * 8, a->attr, flip);
+            draw_char_frames(ax + (a->size == 2 ? 8 : 0), ay + (a->size == 2 ? 16 : 0),
+                             sheet_dir[a->tile].frames, f, a->attr, flip, 0);
         }
     }
     if (shadow_mode != 0xFE) draw_shadow_follower(px, py);
